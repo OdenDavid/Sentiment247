@@ -20,9 +20,9 @@ import ocr
 class App:
     def __init__(self, master): 
         
-        primary = '#181818' #ffffff  
+        primary = '#181818' #ffffff
         foreground = '#ffffff' #222222
-        gray = '#3d3d3d'  #e0e0e0
+        gray = '#3d3d3d' #e0e0e0
         
         w = 900 # window width
         h = 650 # window height
@@ -234,8 +234,11 @@ class App:
                         polarity_scorer(content)
                 # Submit Button
                 self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
-                self.submit.place(relx=0.685,rely=0.45,width=100,height=30)
+                self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
                 Hover(self.submit)
+                # Clear Button
+                self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=self.text_box.delete("1.0",'end-1c'))
+                self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
                 #========Positive Frame======
                 self.pos_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
                 self.pos_frame.place(relx=0.17,rely=0.65)
@@ -422,7 +425,7 @@ class App:
 
             polarity() # Run the polarity function on start
         # Attach Document Button 
-        self.doc = tk.PhotoImage(file='images/doc_img.png')
+        self.doc = tk.PhotoImage(file='images/doc_img.png')           
         self.doc_btn = tk.Button(self.nav_frame,bg=primary,image=self.doc,bd=0,command=doc)
         self.doc_btn.place(relx=0.1,rely=0.25,width=67,height=50)
         CreateToolTip(self.doc_btn,'Attach document')
@@ -500,8 +503,7 @@ class App:
             def link_widgets():
                 # Create Entry Box to accept url link
                 self.url_ent = tk.Entry(self.main_frame,font=('normal',10),fg='gray60',bg=primary,relief='groove',bd=1)
-                self.url_ent.place(relx=0.11,rely=0.07,width=520,height=30)
-                                    
+                self.url_ent.place(relx=0.185,rely=0.07,width=520,height=30)   
                 # Place Holder for text widget
                 self.url_ent.insert(tk.END,'Enter url link to social media post...')
                 self.url_ent.bind("<FocusIn>", lambda args: (self.url_ent.delete("0",tk.END),self.url_ent.configure(fg=foreground)))
@@ -539,7 +541,7 @@ class App:
                         
                 # Submit Button
                 self.submit = tk.Button(self.main_frame,text='Search',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=search)
-                self.submit.place(relx=0.74,rely=0.07,width=100,height=30)
+                self.submit.place(relx=0.695,rely=0.145,width=100,height=30)
                 Hover(self.submit)
                 self.main_frame.bind("<Return>",search)
             #=============Polarity and Depression functions===========
