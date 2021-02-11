@@ -1,7 +1,7 @@
 import tkinter as tk
 class Hover(object):
     '''
-    create a tooltip for a given widget
+    Hover BG colour for a given widget
     '''
     def __init__(self, widget):
         self.widget = widget
