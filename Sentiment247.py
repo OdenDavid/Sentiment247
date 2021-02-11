@@ -221,7 +221,7 @@ class App:
                 self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,relief='groove',bd=1)
                 self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
                 # Place Holder for text widget
-                self.text_box.insert(tk.END,'type something here...')
+                self.text_box.insert(tk.END,'Type something here...')
                 self.text_box.bind("<FocusIn>", lambda args: self.text_box.delete("1.0",tk.END))
 
                 def submit():
@@ -237,7 +237,7 @@ class App:
                 self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
                 Hover(self.submit)
                 # Clear Button
-                self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=self.text_box.delete("1.0",'end-1c'))
+                self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=polarity)
                 self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
                 #========Positive Frame======
                 self.pos_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
@@ -307,6 +307,7 @@ class App:
             self.btn_lbl.place(relx=0.01,rely=0.87)
 
             polarity() # Run the polarity function on start       
+        
         # Text Button 
         self.text = tk.PhotoImage(file='images/text_img.png')
         self.text_btn = tk.Button(self.nav_frame,bg=gray,image=self.text,bd=0,command=text)
@@ -340,7 +341,7 @@ class App:
                     w.destroy()
                 def openfile():
                     # Open a window to select text document file
-                    filepath = filedialog.askopenfilename(initialdir='Documents',title='Open a Document',filetypes=(("Text Document","*.txt"),("Png Files","*.png"),("Jpeg Files","*.jpg")))
+                    filepath = filedialog.askopenfilename(initialdir='Documents',title='Open a Document',filetypes=(("Text Document","*.txt"),("PNG Files","*.png"),("JPEG Files","*.jpg")))
                     # Open file through file path and read it's content
                     if filepath[-3:] == 'txt':
                         with open(filepath) as file_:
