@@ -36,4 +36,5 @@ def CleanMessage(message):
         if token not in string.punctuation and token.lower() not in stop_words:
             cleaned_tokens.append(token)
 
-    return cleaned_tokens
+    cleaned_message = ' '.join(cleaned_tokens)
+    return cleaned_message

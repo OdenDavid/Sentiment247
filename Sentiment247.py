@@ -16,6 +16,9 @@ import validators
 import PolarityScore
 
 import ocr
+
+from preprocess import CleanMessage
+import pickle
 #=========================Main Window=============================
 class App:
     def __init__(self, master): 
@@ -192,6 +195,39 @@ class App:
                 for w in self.neu_frame.winfo_children(): # Neutral Frame
                     w.configure(state=tk.DISABLED)
         
+        def depressive_scorer(content):
+
+            vectorizer = pickle.load(open('vectorizer.pickle','rb'))
+            model = pickle.load(open('classifier.pickle','rb'))
+            pred = model.predict_proba(vectorizer.transform([content]))[0]
+
+            # Create a new dictionary and convert the decimal values to percentage values 
+            new_dict = {'positive':round(pred[0]*100),
+                        'depressive':round(pred[1]*100)}
+
+            # Enable Frames
+            for w in self.pos_frame.winfo_children(): # Positive Frame
+                w.configure(state=tk.NORMAL)
+            for w in self.dep_frame.winfo_children(): # Depressive Frame
+                w.configure(state=tk.NORMAL)
+                
+            new_values = list(new_dict.values()) # Create a new list of values(scores)
+            self.positive_per.configure(text=str(new_values[0])+'%') # Configure the positive value
+            self.depressive_per.configure(text=str(new_values[1])+'%') # Configure the depressive value
+
+            max_value = max(new_values) # Get the maximum value from the list
+            max_index = new_values.index(max_value) # Get the index of the highest value in the list
+            if max_index == 0: # If the maximum value is the positive
+                self.dep_frame.configure(width=130,height=170)
+                self.pos_frame.configure(width=150,height=190)
+                for w in self.dep_frame.winfo_children(): # Depressive Frame
+                    w.configure(state=tk.DISABLED)
+            elif max_index == 1: # If the maximum value is the depressive
+                self.dep_frame.configure(width=150,height=190)
+                self.pos_frame.configure(width=130,height=170)
+                for w in self.pos_frame.winfo_children(): # Depressive Frame
+                    w.configure(state=tk.DISABLED)
+
         def text():
             # Configure Colour
             self.text_btn.configure(bg=gray)
@@ -298,6 +334,66 @@ class App:
                 self.pos_frame.place_configure(relx=0.28,rely=0.65) # Change Positive Frame Position
                 self.neg_frame.place_configure(relx=0.53,rely=0.65) # Change Positive Frame Position
                 self.negative_lbl.configure(text='Depressive')
+
+                # Remove every widget that stands in your way
+                for w in self.main_frame.winfo_children():
+                    w.destroy()
+                # Text Widget
+                self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,relief='groove',bd=1)
+                self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
+                # Place Holder for text widget
+                self.text_box.insert(tk.END,'Type something here...')
+                self.text_box.bind("<FocusIn>", lambda args: self.text_box.delete("1.0",tk.END))
+
+                def submit():
+                    content = self.text_box.get("1.0",'end-1c') # The content of the text box
+                    if content == "":
+                        messagebox.showerror("Entry error","You can not perform sentiment analysis on an empty text box")
+                    elif type(content) == int:
+                        messagebox.showerror("Entry error","You can not perform sentiment analysis on a number")
+                    else:
+                        content = CleanMessage(content)
+                        depressive_scorer(content)
+                # Submit Button
+                self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
+                self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
+                Hover(self.submit)
+                # Clear Button
+                self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=polarity)
+                self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
+                #========Positive Frame======
+                self.pos_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
+                self.pos_frame.place(relx=0.28,rely=0.65)
+                # Positive Image
+                self.happy_img = tk.PhotoImage(file='images/happy.png')
+                self.happy_lbl = tk.Label(self.pos_frame,bg=primary,image=self.happy_img)
+                self.happy_lbl.place(relx=0.26,rely=0.05)
+                # Positive Label
+                self.positive_lbl = tk.Label(self.pos_frame,text='Positive',font=('normal',9,'bold'),fg='#008000',bg='#9de19d')
+                self.positive_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
+                # Positive Percentage
+                self.positive_per = tk.Label(self.pos_frame,text='0%',font=('normal',10,'bold'),fg=foreground,bg=primary)
+                self.positive_per.place(relx=0.415,rely=0.7)
+                #========Depressive Frame======
+                self.dep_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
+                self.dep_frame.place(relx=0.53,rely=0.65)
+                # Depressive Image
+                self.depressive_img = tk.PhotoImage(file='images/sad.png')
+                self.depressive_lbl = tk.Label(self.dep_frame,bg=primary,image=self.depressive_img)
+                self.depressive_lbl.place(relx=0.26,rely=0.05)
+                # Depressive Label
+                self.depressive_lbl = tk.Label(self.dep_frame,text='Depressive',font=('normal',9,'bold'),fg='#ec1c24',bg='#f6a4a8')
+                self.depressive_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
+                # Depressive Percentage
+                self.depressive_per = tk.Label(self.dep_frame,text='0%',font=('normal',10,'bold'),fg=foreground,bg=primary)
+                self.depressive_per.place(relx=0.415,rely=0.7)
+
+                # Disable Frame Content By Defalult
+                for w in self.pos_frame.winfo_children(): # Positive Frame
+                    w.configure(state=tk.DISABLED)
+                for w in self.dep_frame.winfo_children(): # Depressive Frame
+                    w.configure(state=tk.DISABLED)
+                
             # Detect Polarity Button
             self.dep_btn = tk.Button(self.top_frame,text='Detect Depression',font=('arial',9,'bold'),bg=primary,activebackground=primary,fg=gray,bd=0,command=depression)
             self.dep_btn.place(relx=0.5,rely=0.64,width=410)
