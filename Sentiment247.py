@@ -206,6 +206,12 @@ class App:
                         'depressive':round(pred[1]*100)}
 
             # Enable Frames
+            self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
+            self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
+            self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
+            self.pos_frame.place(relx=0.28,rely=0.65)
+            self.dep_frame.place(relx=0.53,rely=0.65)
+            
             for w in self.pos_frame.winfo_children(): # Positive Frame
                 w.configure(state=tk.NORMAL)
             for w in self.dep_frame.winfo_children(): # Depressive Frame
@@ -245,6 +251,7 @@ class App:
                 w.destroy()
             for w in self.top_frame.winfo_children():
                 w.destroy()
+                
             #=============Polarity and Depression functions===========
             def polarity():
                 self.btn_lbl.place(relx=0,rely=0.87)
@@ -330,10 +337,6 @@ class App:
                 self.btn_lbl.place(relx=0.51,rely=0.87)
                 self.pol_btn.configure(fg=gray)
                 self.dep_btn.configure(fg=foreground)  
-                self.neu_frame.destroy() # Remove the neutral frame
-                self.pos_frame.place_configure(relx=0.28,rely=0.65) # Change Positive Frame Position
-                self.neg_frame.place_configure(relx=0.53,rely=0.65) # Change Positive Frame Position
-                self.negative_lbl.configure(text='Depressive')
 
                 # Remove every widget that stands in your way
                 for w in self.main_frame.winfo_children():
@@ -352,14 +355,30 @@ class App:
                     elif type(content) == int:
                         messagebox.showerror("Entry error","You can not perform sentiment analysis on a number")
                     else:
-                        content = CleanMessage(content)
-                        depressive_scorer(content)
+                        for w in self.main_frame.winfo_children():
+                            w.place_forget()
+                        # Label for the loader gif
+                        load_lbl = loading.ImageLabel(self.main_frame,bg=gray)
+                        load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
+                        
+                        def clean():
+                            processed = CleanMessage(content)
+                            if processed != "":
+                                load_lbl.unload()
+                                load_lbl.place_forget()
+                                depressive_scorer(processed)                               
+                            else:
+                                pass                            
+                        def load():
+                            load_lbl.load('images/load.gif')
+                        threading.Thread(target=clean).start()
+                        threading.Thread(target=load).start() 
                 # Submit Button
                 self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
                 self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
                 Hover(self.submit)
                 # Clear Button
-                self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=polarity)
+                self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=depression)
                 self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
                 #========Positive Frame======
                 self.pos_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
@@ -403,10 +422,9 @@ class App:
             self.btn_lbl.place(relx=0.01,rely=0.87)
 
             polarity() # Run the polarity function on start       
-        
         # Text Button 
         self.text = tk.PhotoImage(file='images/text_img.png')
-        self.text_btn = tk.Button(self.nav_frame,bg=gray,image=self.text,bd=0,command=text)
+        self.text_btn = tk.Button(self.nav_frame,bg=gray,image=self.text,activebackground=primary,bd=0,command=text)
         self.text_btn.place(relx=0.1,rely=0.16,width=67,height=50)
         CreateToolTip(self.text_btn,'Type text')
 
@@ -442,17 +460,34 @@ class App:
                     if filepath[-3:] == 'txt':
                         with open(filepath) as file_:
                             content = file_.read()
+                            polarity_widgets(content)
                     elif filepath[-3:] == 'jpg' or filepath[-3:] == 'png':
-                        img = ocr.get_image(filepath)
-                        img = ocr.get_grayscale(img)
-                        img = ocr.thresholding(img)
-                        img = ocr.noise_removal(img)
-                        content = ocr.ocr_core(img)
+                        for w in self.main_frame.winfo_children():
+                            w.place_forget() 
+                        # Label for the loader gif
+                        load_lbl = loading.ImageLabel(self.main_frame,bg=gray)
+                        load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
+                            
+                        def clean():
+                            img = ocr.get_image(filepath)
+                            img = ocr.get_grayscale(img)
+                            img = ocr.thresholding(img)
+                            img = ocr.noise_removal(img)
+                            content = ocr.ocr_core(img)
+                            if content != "":
+                                load_lbl.unload()
+                                load_lbl.place_forget()
+                                # Call the function to display the text
+                                polarity_widgets(content)                               
+                            else:
+                                pass                            
+                        def load():
+                            load_lbl.load('images/load.gif')
+                        threading.Thread(target=clean).start()
+                        threading.Thread(target=load).start() 
                     else:
                         messagebox.showerror("File Error","Please Try Again!")
-                    # Call the function to display the text
-                    polarity_widgets(content)
-                    
+                                       
                 self.info_frame = tk.Frame(self.main_frame,bg=primary,width=500,height=150,relief='groove',bd=2)
                 self.info_frame.place(relx=0.2,rely=0.1)
                 
@@ -523,7 +558,7 @@ class App:
             polarity() # Run the polarity function on start
         # Attach Document Button 
         self.doc = tk.PhotoImage(file='images/doc_img.png')           
-        self.doc_btn = tk.Button(self.nav_frame,bg=primary,image=self.doc,bd=0,command=doc)
+        self.doc_btn = tk.Button(self.nav_frame,bg=primary,image=self.doc,activebackground=primary,bd=0,command=doc)
         self.doc_btn.place(relx=0.1,rely=0.25,width=67,height=50)
         CreateToolTip(self.doc_btn,'Attach document')
 
@@ -575,7 +610,7 @@ class App:
 
             polarity() # Run the polarity function on start
         self.voice = tk.PhotoImage(file='images/voice_img.png')
-        self.voice_btn = tk.Button(self.nav_frame,bg=primary,image=self.voice,bd=0,command=voice)
+        self.voice_btn = tk.Button(self.nav_frame,bg=primary,image=self.voice,activebackground=primary,bd=0,command=voice)
         self.voice_btn.place(relx=0.1,rely=0.34,width=67,height=50)
         CreateToolTip(self.voice_btn,'Voice record')
 
@@ -683,7 +718,7 @@ class App:
             polarity() # Run the polarity function
             
         self.link = tk.PhotoImage(file='images/link_img.png')
-        self.link_btn = tk.Button(self.nav_frame,bg=primary,image=self.link,bd=0,command=link)
+        self.link_btn = tk.Button(self.nav_frame,bg=primary,image=self.link,activebackground=primary,bd=0,command=link)
         self.link_btn.place(relx=0.1,rely=0.43,width=67,height=50)
         CreateToolTip(self.link_btn,'Social media post')
             
