@@ -2,30 +2,23 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
-import loading
+
+from Extensions import loading, tooltip, hover
 import threading
 
-from tooltip import CreateToolTip
-from hover import Hover
-
+from Extensions import twitter
+import validators
 import socket
 
-import twitter
-import validators
-
-import PolarityScore
-
-import ocr
-
-from preprocess import CleanMessage
+from Extensions import ocr, preprocess, PolarityScore
 import pickle
 #=========================Main Window=============================
 class App:
     def __init__(self, master): 
         
-        primary = '#181818' #ffffff
-        foreground = '#ffffff' #222222
-        gray = '#3d3d3d' #e0e0e0
+        primary = '#ffffff' #181818
+        foreground = '#222222' #ffffff
+        gray = '#e0e0e0' #3d3d3d
         
         w = 900 # window width
         h = 650 # window height
@@ -84,17 +77,17 @@ class App:
             self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
             self.text_box.insert(tk.END,content)
             def submit():
-                    content = self.text_box.get("1.0",'end-1c') # The content of the text box
-                    if content == "":
-                        messagebox.showerror("Entry error","You can not perform sentiment analysis on an empty text box")
-                    elif type(content) == int:
-                        messagebox.showerror("Entry error","You can not perform sentiment analysis on a number")
-                    else:
-                        polarity_scorer(content)
+                content = self.text_box.get("1.0",'end-1c') # The content of the text box
+                if content == "":
+                    messagebox.showerror("Entry error","You can not perform sentiment analysis on an empty text box")
+                elif type(content) == int:
+                    messagebox.showerror("Entry error","You can not perform sentiment analysis on a number")
+                else:
+                    polarity_scorer(content)
             # Submit Button
             self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
             self.submit.place(relx=0.685,rely=0.45,width=100,height=30)
-            Hover(self.submit)
+            hover.Hover(self.submit)
             #========Positive Frame======
             self.pos_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
             self.pos_frame.place(relx=0.17,rely=0.65)
@@ -143,6 +136,77 @@ class App:
             for w in self.neg_frame.winfo_children(): # Negative Frame
                 w.configure(state=tk.DISABLED)                 
                 
+        def depressive_widgets(content):
+            # Remove every widget that stands in your way
+            for w in self.main_frame.winfo_children():
+                w.destroy()
+            # Text Widget
+            self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,relief='groove',bd=1)
+            self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
+            self.text_box.insert(tk.END,content)
+            
+            def submit():
+                content = self.text_box.get("1.0",'end-1c') # The content of the text box
+                if content == "":
+                    messagebox.showerror("Entry error","You can not perform sentiment analysis on an empty text box")
+                elif type(content) == int:
+                    messagebox.showerror("Entry error","You can not perform sentiment analysis on a number")
+                else:
+                    for w in self.main_frame.winfo_children():
+                        w.place_forget()
+                    # Label for the loader gif
+                    load_lbl = loading.ImageLabel(self.main_frame,bg=gray)
+                    load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
+                    
+                    def clean():
+                        processed = preprocess.CleanMessage(content)
+                        if processed != "":
+                            load_lbl.unload()
+                            load_lbl.place_forget()
+                            depressive_scorer(processed)                               
+                        else:
+                            pass                            
+                    def load():
+                        load_lbl.load('images/load.gif')
+                    threading.Thread(target=clean).start()
+                    threading.Thread(target=load).start() 
+            # Submit Button
+            self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
+            self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
+            hover.Hover(self.submit)
+            #========Positive Frame======
+            self.pos_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
+            self.pos_frame.place(relx=0.28,rely=0.65)
+            # Positive Image
+            self.happy_img = tk.PhotoImage(file='images/happy.png')
+            self.happy_lbl = tk.Label(self.pos_frame,bg=primary,image=self.happy_img)
+            self.happy_lbl.place(relx=0.26,rely=0.05)
+            # Positive Label
+            self.positive_lbl = tk.Label(self.pos_frame,text='Positive',font=('normal',9,'bold'),fg='#008000',bg='#9de19d')
+            self.positive_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
+            # Positive Percentage
+            self.positive_per = tk.Label(self.pos_frame,text='0%',font=('normal',10,'bold'),fg=foreground,bg=primary)
+            self.positive_per.place(relx=0.415,rely=0.7)
+            #========Depressive Frame======
+            self.dep_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
+            self.dep_frame.place(relx=0.53,rely=0.65)
+            # Depressive Image
+            self.depressive_img = tk.PhotoImage(file='images/sad.png')
+            self.depressive_lbl = tk.Label(self.dep_frame,bg=primary,image=self.depressive_img)
+            self.depressive_lbl.place(relx=0.26,rely=0.05)
+            # Depressive Label
+            self.depressive_lbl = tk.Label(self.dep_frame,text='Depressive',font=('normal',9,'bold'),fg='#ec1c24',bg='#f6a4a8')
+            self.depressive_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
+            # Depressive Percentage
+            self.depressive_per = tk.Label(self.dep_frame,text='0%',font=('normal',10,'bold'),fg=foreground,bg=primary)
+            self.depressive_per.place(relx=0.415,rely=0.7)
+        
+            # Disable Frame Content By Defalult
+            for w in self.pos_frame.winfo_children(): # Positive Frame
+                w.configure(state=tk.DISABLED)
+            for w in self.dep_frame.winfo_children(): # Depressive Frame
+                w.configure(state=tk.DISABLED) 
+
         def polarity_scorer(content):
             """This Function is will assign polaity scores to thier
             respective labels and configuring size of frames when scores are calculated"""
@@ -278,7 +342,7 @@ class App:
                 # Submit Button
                 self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
                 self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
-                Hover(self.submit)
+                hover.Hover(self.submit)
                 # Clear Button
                 self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=polarity)
                 self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
@@ -337,7 +401,7 @@ class App:
                 self.btn_lbl.place(relx=0.51,rely=0.87)
                 self.pol_btn.configure(fg=gray)
                 self.dep_btn.configure(fg=foreground)  
-
+                
                 # Remove every widget that stands in your way
                 for w in self.main_frame.winfo_children():
                     w.destroy()
@@ -347,7 +411,7 @@ class App:
                 # Place Holder for text widget
                 self.text_box.insert(tk.END,'Type something here...')
                 self.text_box.bind("<FocusIn>", lambda args: self.text_box.delete("1.0",tk.END))
-
+            
                 def submit():
                     content = self.text_box.get("1.0",'end-1c') # The content of the text box
                     if content == "":
@@ -362,7 +426,7 @@ class App:
                         load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
                         
                         def clean():
-                            processed = CleanMessage(content)
+                            processed = preprocess.CleanMessage(content)
                             if processed != "":
                                 load_lbl.unload()
                                 load_lbl.place_forget()
@@ -376,7 +440,7 @@ class App:
                 # Submit Button
                 self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
                 self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
-                Hover(self.submit)
+                hover.Hover(self.submit)
                 # Clear Button
                 self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=depression)
                 self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
@@ -406,13 +470,12 @@ class App:
                 # Depressive Percentage
                 self.depressive_per = tk.Label(self.dep_frame,text='0%',font=('normal',10,'bold'),fg=foreground,bg=primary)
                 self.depressive_per.place(relx=0.415,rely=0.7)
-
+            
                 # Disable Frame Content By Defalult
                 for w in self.pos_frame.winfo_children(): # Positive Frame
                     w.configure(state=tk.DISABLED)
                 for w in self.dep_frame.winfo_children(): # Depressive Frame
-                    w.configure(state=tk.DISABLED)
-                
+                    w.configure(state=tk.DISABLED) 
             # Detect Polarity Button
             self.dep_btn = tk.Button(self.top_frame,text='Detect Depression',font=('arial',9,'bold'),bg=primary,activebackground=primary,fg=gray,bd=0,command=depression)
             self.dep_btn.place(relx=0.5,rely=0.64,width=410)
@@ -426,7 +489,7 @@ class App:
         self.text = tk.PhotoImage(file='images/text_img.png')
         self.text_btn = tk.Button(self.nav_frame,bg=gray,image=self.text,activebackground=primary,bd=0,command=text)
         self.text_btn.place(relx=0.1,rely=0.16,width=67,height=50)
-        CreateToolTip(self.text_btn,'Type text')
+        tooltip.CreateToolTip(self.text_btn,'Type text')
 
         def doc():
             # Configure Colour
@@ -509,7 +572,6 @@ class App:
                     fg=foreground,bg='#ecb22e',activebackground=gray,bd=0,command=openfile)
                 self.attach_btn.place(relx=0.41,rely=0.40,width=160,height=35)
                 Hover(self.attach_btn)
-            
             self.pol_btn = tk.Button(self.top_frame,text='Detect Polarity',font=('arial',9,'bold'),\
                 bg=primary,activebackground=primary,fg=foreground,bd=0,command=polarity)
             self.pol_btn.place(relx=0.02,rely=0.64,width=410)
@@ -523,7 +585,39 @@ class App:
                     w.destroy()
                 
                 def openfile():
-                    pass
+                    # Open a window to select text document file
+                    filepath = filedialog.askopenfilename(initialdir='Documents',title='Open a Document',filetypes=(("Text Document","*.txt"),("PNG Files","*.png"),("JPEG Files","*.jpg")))
+                    # Open file through file path and read it's content
+                    if filepath[-3:] == 'txt':
+                        with open(filepath) as file_:
+                            content = file_.read()
+                            depressive_widgets(content)
+                    elif filepath[-3:] == 'jpg' or filepath[-3:] == 'png':
+                        for w in self.main_frame.winfo_children():
+                            w.place_forget() 
+                        # Label for the loader gif
+                        load_lbl = loading.ImageLabel(self.main_frame,bg=gray)
+                        load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
+                            
+                        def clean():
+                            img = ocr.get_image(filepath)
+                            img = ocr.get_grayscale(img)
+                            img = ocr.thresholding(img)
+                            img = ocr.noise_removal(img)
+                            content = ocr.ocr_core(img)
+                            if content != "":
+                                load_lbl.unload()
+                                load_lbl.place_forget()
+                                # Call the function to display the text
+                                depressive_widgets(content)                              
+                            else:
+                                pass                            
+                        def load():
+                            load_lbl.load('images/load.gif')
+                        threading.Thread(target=clean).start()
+                        threading.Thread(target=load).start() 
+                    else:
+                        messagebox.showerror("File Error","Please Try Again!")
 
                 self.info_frame = tk.Frame(self.main_frame,bg=primary,width=500,height=150,relief='groove',bd=2)
                 self.info_frame.place(relx=0.2,rely=0.1)
@@ -546,7 +640,6 @@ class App:
                     fg=foreground,bg='#ecb22e',activebackground=gray,bd=0,command=openfile)
                 self.attach_btn.place(relx=0.41,rely=0.40,width=160,height=35)
                 Hover(self.attach_btn)
-
             self.dep_btn = tk.Button(self.top_frame,text='Detect Depression',font=('arial',9,'bold'),\
                 bg=primary,activebackground=primary,fg=gray,bd=0,command=depression)
             self.dep_btn.place(relx=0.5,rely=0.64,width=410)
@@ -560,7 +653,7 @@ class App:
         self.doc = tk.PhotoImage(file='images/doc_img.png')           
         self.doc_btn = tk.Button(self.nav_frame,bg=primary,image=self.doc,activebackground=primary,bd=0,command=doc)
         self.doc_btn.place(relx=0.1,rely=0.25,width=67,height=50)
-        CreateToolTip(self.doc_btn,'Attach document')
+        tooltip.CreateToolTip(self.doc_btn,'Attach document')
 
         def voice():
             # Configure Colour
@@ -609,10 +702,11 @@ class App:
             self.btn_lbl.place(relx=0.01,rely=0.87)
 
             polarity() # Run the polarity function on start
+        # Voice Record Button 
         self.voice = tk.PhotoImage(file='images/voice_img.png')
         self.voice_btn = tk.Button(self.nav_frame,bg=primary,image=self.voice,activebackground=primary,bd=0,command=voice)
         self.voice_btn.place(relx=0.1,rely=0.34,width=67,height=50)
-        CreateToolTip(self.voice_btn,'Voice record')
+        tooltip.CreateToolTip(self.voice_btn,'Voice record')
 
         def link():
             # Configure Colour
@@ -640,7 +734,7 @@ class App:
                 self.url_ent.insert(tk.END,'Enter url link to social media post...')
                 self.url_ent.bind("<FocusIn>", lambda args: (self.url_ent.delete("0",tk.END),self.url_ent.configure(fg=foreground)))
                 self.url_ent.bind("<FocusOut>", lambda args: (self.url_ent.insert(tk.END,'Enter url link to social media post...'),self.url_ent.configure(fg='gray60')))
-                            
+     
                 def search():
                     url = self.url_ent.get()
 
@@ -655,13 +749,15 @@ class App:
                             load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
                             def get_tweet():
                                 content = ""
-                                content = twitter.get_text(url) # the get_text method from twitter module retuns tweet text 
-                                                
+                                content = twitter.get_text(url) # the get_text method from twitter module retuns tweet text                                                
                                 if content != "":
-                                    load_lbl.unload()
-                                            
-                                    # Call the function to display the text
-                                    polarity_widgets(content)                                   
+                                    load_lbl.unload()  
+                                    if self.btn_lbl.winfo_rootx() == 311:                               
+                                        # Call the function to display the text for polarity
+                                        polarity_widgets(content)   
+                                    else:
+                                        # Call the function to display the text for depression
+                                        depressive_widgets(content)                                  
                             def load():                                       
                                 load_lbl.load('images/load.gif')
                             threading.Thread(target=get_tweet).start()
@@ -669,13 +765,13 @@ class App:
                         else:
                             pass               
                     else:
-                        messagebox.showerror("Url Error","You entered an invalid URL\nMust be Facebook, Instagram, LinkedIn or Twitter URL")
-                        
+                        messagebox.showerror("Url Error","You entered an invalid URL\nMust be Facebook, Instagram, LinkedIn or Twitter URL")                       
                 # Submit Button
                 self.submit = tk.Button(self.main_frame,text='Search',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=search)
                 self.submit.place(relx=0.695,rely=0.145,width=100,height=30)
-                Hover(self.submit)
+                hover.Hover(self.submit)
                 self.main_frame.bind("<Return>",search)
+            
             #=============Polarity and Depression functions===========
             def polarity():
                 for w in self.main_frame.winfo_children():
@@ -705,9 +801,29 @@ class App:
             self.pol_btn.place(relx=0.02,rely=0.64,width=410)
 
             def depression():
+                for w in self.main_frame.winfo_children():
+                    w.destroy()
                 self.btn_lbl.place(relx=0.51,rely=0.87)
                 self.pol_btn.configure(fg=gray)
                 self.dep_btn.configure(fg=foreground)
+
+                # Label for the loader gif
+                load_lbl = loading.ImageLabel(self.main_frame,bg=gray)
+                load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
+                
+                def check_connection():
+                    if is_connected(): # If there is internet connection
+                        load_lbl.unload()
+                        link_widgets()
+                    else: 
+                        load_lbl.unload()
+                        self.lbl_404 = tk.PhotoImage(file='images/error-404.png')
+                        self.tryagain = tk.Button(self.main_frame,image=self.lbl_404,text='Try again',compound='top',font=('arial',9,'bold'),bg=gray,activebackground=gray,fg=foreground,bd=0,command=link)
+                        self.tryagain.place(relx=0.46,rely=0.38)
+                def load():
+                    load_lbl.load('images/load.gif')
+                threading.Thread(target=check_connection).start()
+                threading.Thread(target=load).start() 
             self.dep_btn = tk.Button(self.top_frame,text='Detect Depression',font=('arial',9,'bold'),bg=primary,activebackground=primary,fg=gray,bd=0,command=depression)
             self.dep_btn.place(relx=0.5,rely=0.64,width=410)
 
@@ -716,11 +832,12 @@ class App:
             self.btn_lbl.place(relx=0.01,rely=0.87)
             
             polarity() # Run the polarity function
-            
+         # Attach Document Button    
+        # Social media link Button 
         self.link = tk.PhotoImage(file='images/link_img.png')
         self.link_btn = tk.Button(self.nav_frame,bg=primary,image=self.link,activebackground=primary,bd=0,command=link)
         self.link_btn.place(relx=0.1,rely=0.43,width=67,height=50)
-        CreateToolTip(self.link_btn,'Social media post')
+        tooltip.CreateToolTip(self.link_btn,'Social media post')
             
         text() # Run the text function on start
 
@@ -768,7 +885,6 @@ class App:
         self.getstarted.focus() # Focus on this button when the program starts
         Hover(self.getstarted)
         self.getstarted.bind("<Return>",getstarted) # Bind the return(enter) key to the get started function"""
-
 
 if __name__=='__main__':
     root = tk.Tk() 
