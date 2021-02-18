@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+import functools
 
 from Extensions import loading, tooltip, hover
 import threading
@@ -22,9 +23,8 @@ except FileNotFoundError:
     tkinter.messagebox.showerror("Connection Error","Couldn't Connect to Data.\nPlease ensure file is available.")  
 #=========================Main Window=============================
 class App:
-    def __init__(self, master): 
-        
-        c.execute("SELECT * FROM COLOR")
+    def __init__(self, master):        
+        c.execute("SELECT * FROM Color")
         colors = c.fetchall()
         for color in colors:
             primary = color[0] #'#ffffff' #181818
@@ -51,7 +51,6 @@ class App:
             for widget in self.master.winfo_children():
                 widget.destroy()
             def continue_():
-            
                 #=============Top Frame========================
                 self.top_frame = tk.Frame(self.master,width=823,height=80,bg=primary,relief='flat',bd=0)
                 self.top_frame.place(relx=0.078,rely=0)
@@ -59,14 +58,14 @@ class App:
                 self.main_frame = tk.Frame(self.master,width=820,height=570,bg=gray)
                 self.main_frame.place(relx=0.085,rely=0.12)
                 #===============Navigation Frame===============
-                self.nav_frame = tk.Frame(self.master,bg=primary,width=80,height=650,relief='groove',bd=2)
+                self.nav_frame = tk.Frame(self.master,bg=primary,width=79,height=650,relief='groove',bd=1)
                 self.nav_frame.place(relx=0,rely=0)
-        
+                
                 self.lbl = tk.Label(self.nav_frame,bg=primary,text='___________',fg=gray)
                 self.lbl.place(relx=0.07,rely=0.09)
                 self.logo = tk.PhotoImage(file='images/logo_img.png')
-                self.logo_lbl = tk.Label(self.nav_frame,bg=primary,image=self.logo)
-                self.logo_lbl.place(relx=0,rely=0,width=73,height=70)
+                self.logo_ = tk.Label(self.nav_frame,bg=primary,image=self.logo)
+                self.logo_.place(relx=0,rely=0,width=73,height=70)
                 self.nav_btn = tk.PhotoImage(file='images/nav_btn.png')
                 self.logo_lbl = tk.Label(self.nav_frame,bg=primary,image=self.nav_btn)
                 self.logo_lbl.place(relx=0,rely=0.157)
@@ -308,9 +307,14 @@ class App:
                         self.pos_frame.configure(width=130,height=170)
                         for w in self.pos_frame.winfo_children(): # Depressive Frame
                             w.configure(state=tk.DISABLED)
-        
-                               
+                                       
                 def text():
+                    self.master.title("Sentiment247  >  Text")
+                    # Get current colors
+                    c.execute("SELECT * FROM Color")
+                    colors = c.fetchall()
+                    for color in colors:
+                        primary, foreground, gray = color[0], color[1], color[2]
                     # Configure Colour
                     self.text_btn.configure(bg=gray)
                     self.doc_btn.configure(bg=primary)
@@ -330,6 +334,12 @@ class App:
                         
                     #=============Polarity and Depression functions===========
                     def polarity():
+                        self.master.title("Sentiment247  >  Text  >  Polarity")
+                        # Get current colors
+                        c.execute("SELECT * FROM Color")
+                        colors = c.fetchall()
+                        for color in colors:
+                            primary, foreground, gray = color[0], color[1], color[2]
                         self.btn_lbl.place(relx=0,rely=0.87)
                         self.pol_btn.configure(fg=foreground)
                         self.dep_btn.configure(fg=gray)
@@ -355,16 +365,13 @@ class App:
                         self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
                         self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
                         hover.Hover(self.submit)
-                        # Clear Button
-                        self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=polarity)
-                        self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
                         #========Positive Frame======
                         self.pos_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
                         self.pos_frame.place(relx=0.17,rely=0.65)
                         # Positive Image
                         self.happy_img = tk.PhotoImage(file='images/happy.png')
-                        self.happy_lbl = tk.Label(self.pos_frame,bg=primary,image=self.happy_img)
-                        self.happy_lbl.place(relx=0.26,rely=0.05)
+                        self.happy_lbl_image = tk.Label(self.pos_frame,bg=primary,image=self.happy_img)
+                        self.happy_lbl_image.place(relx=0.26,rely=0.05)
                         # Positive Label
                         self.positive_lbl = tk.Label(self.pos_frame,text='Positive',font=('normal',9,'bold'),fg='#008000',bg='#9de19d')
                         self.positive_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
@@ -376,8 +383,8 @@ class App:
                         self.neu_frame.place(relx=0.41,rely=0.65)
                         # Neutral Image
                         self.neutral_img = tk.PhotoImage(file='images/neutral.png')
-                        self.neutral_lbl = tk.Label(self.neu_frame,bg=primary,image=self.neutral_img)
-                        self.neutral_lbl.place(relx=0.26,rely=0.05)
+                        self.neutral_lbl_image = tk.Label(self.neu_frame,bg=primary,image=self.neutral_img)
+                        self.neutral_lbl_image.place(relx=0.26,rely=0.05)
                         # Neutral Label
                         self.neutral_lbl = tk.Label(self.neu_frame,text='Neutral',font=('normal',9,'bold'),fg='#ffca18',bg='#fbe6a2')
                         self.neutral_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
@@ -389,8 +396,8 @@ class App:
                         self.neg_frame.place(relx=0.64,rely=0.65)
                         # Negative Image
                         self.negative_img = tk.PhotoImage(file='images/sad.png')
-                        self.negative_lbl = tk.Label(self.neg_frame,bg=primary,image=self.negative_img)
-                        self.negative_lbl.place(relx=0.26,rely=0.05)
+                        self.negative_lbl_image = tk.Label(self.neg_frame,bg=primary,image=self.negative_img)
+                        self.negative_lbl_image.place(relx=0.26,rely=0.05)
                         # Negative Label
                         self.negative_lbl = tk.Label(self.neg_frame,text='Negative',font=('normal',9,'bold'),fg='#ec1c24',bg='#f6a4a8')
                         self.negative_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
@@ -404,12 +411,97 @@ class App:
                         for w in self.neu_frame.winfo_children(): # Neutral Frame
                             w.configure(state=tk.DISABLED)
                         for w in self.neg_frame.winfo_children(): # Negative Frame
-                            w.configure(state=tk.DISABLED)            
+                            w.configure(state=tk.DISABLED)  
+
+                        #===========Toggle==========
+                        """def toggle_main():                
+                            if self.toggle_btn['image'] == 'pyimage18':
+                                self.toggle_btn.configure(image=self.light)
+                            else:
+                                self.toggle_btn.configure(image=self.dark)
+                            # Get current colors
+                            c.execute("SELECT * FROM Color")
+                            colors = c.fetchall()
+                            for color in colors:
+                                primary, foreground, gray = color[0], color[1], color[2]
+                            if primary == '#ffffff': # That means we are on light mode
+                                primary, foreground, gray = '#181818', '#ffffff', '#3d3d3d'
+                                self.master.configure(bg=primary)
+                                self.nav_frame.configure(bg=primary)
+                                for widget in self.nav_frame.winfo_children():
+                                    widget.configure(bg=primary,activebackground=primary)
+                                    if str(widget).split('!')[-1] == 'label':
+                                        widget.configure(fg=gray)
+                                    if str(widget).split('!')[-1] == 'button':
+                                        widget.configure(bg=gray)  
+                                self.top_frame.configure(bg=primary)
+                                self.pol_btn.configure(bg=primary,activebackground=primary,fg=foreground)
+                                self.dep_btn.configure(bg=primary,activebackground=primary,fg=gray)
+                                self.btn_lbl.configure(bg=primary)
+                                self.main_frame.configure(bg=gray)
+                                for widget in self.main_frame.winfo_children():
+                                    if str(widget).split('!')[-1] == 'button':
+                                        widget.configure(bg='#ecb22e',fg=primary)
+                                    if str(widget).split('!')[-1] == 'text':
+                                        widget.configure(bg=primary,fg=foreground)
+                                    if str(widget).split('!')[-1][0] == 'f':
+                                        widget.configure(bg=primary)
+                                        for widget2 in widget.winfo_children():
+                                            widget2.configure(state=tk.NORMAL)
+                                            if str(widget2).split('!')[-1] != 'label2':
+                                                widget2.configure(bg=primary)     
+                                            if str(widget2).split('!')[-1] == 'label3':
+                                                widget2.configure(fg=foreground)
+                                        for widget2 in widget.winfo_children():
+                                            if str(widget2).split('!')[-1] != 'label':
+                                                widget2.configure(state=tk.DISABLED)
+                                # update database
+                                c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
+                                conn.commit()
+                            elif primary == '#181818': # That means we are on dark mode:
+                                primary, foreground, gray = '#ffffff', '#222222', '#e0e0e0'
+                                self.master.configure(bg=primary)
+                                self.nav_frame.configure(bg=primary)
+                                for widget in self.nav_frame.winfo_children():
+                                    widget.configure(bg=primary,activebackground=primary)
+                                    if str(widget).split('!')[-1] == 'label':
+                                        widget.configure(fg=gray)
+                                    if str(widget).split('!')[-1] == 'button':
+                                        widget.configure(bg=gray)  
+                                self.top_frame.configure(bg=primary)
+                                self.pol_btn.configure(bg=primary,activebackground=primary,fg=foreground)
+                                self.dep_btn.configure(bg=primary,activebackground=primary,fg=gray)
+                                self.btn_lbl.configure(bg=primary)
+                                self.main_frame.configure(bg=gray)
+                                for widget in self.main_frame.winfo_children():
+                                    if str(widget).split('!')[-1] == 'button':
+                                        widget.configure(bg='#ecb22e',fg=primary)
+                                    if str(widget).split('!')[-1] == 'text':
+                                        widget.configure(bg=primary,fg=foreground)
+                                    if str(widget).split('!')[-1][0] == 'f':
+                                        widget.configure(bg=primary)
+                                        for widget2 in widget.winfo_children():
+                                            widget2.configure(state=tk.NORMAL)
+                                            if str(widget2).split('!')[-1] != 'label2':
+                                                widget2.configure(bg=primary)                                         
+                                            if str(widget2).split('!')[-1] == 'label3':
+                                                widget2.configure(fg=foreground)
+                                        for widget2 in widget.winfo_children():
+                                            if str(widget2).split('!')[-1] != 'label':
+                                                widget2.configure(state=tk.DISABLED)
+                                            
+                                # update database
+                                c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
+                                conn.commit()
+                            else:
+                                pass                       
+                        self.toggle_btn.configure(command=toggle_main)"""
                     # Detect Polarity Button    
                     self.pol_btn = tk.Button(self.top_frame,text='Detect Polarity',font=('arial',9,'bold'),bg=primary,activebackground=primary,fg=foreground,bd=0,command=polarity)
                     self.pol_btn.place(relx=0.02,rely=0.64,width=410)
         
                     def depression():
+                        self.master.title("Sentiment247  >  Text  >  Depression")
                         self.btn_lbl.place(relx=0.51,rely=0.87)
                         self.pol_btn.configure(fg=gray)
                         self.dep_btn.configure(fg=foreground)  
@@ -496,14 +588,14 @@ class App:
                     self.btn_lbl = tk.Label(self.top_frame,bg=primary,image=self.btn)
                     self.btn_lbl.place(relx=0.01,rely=0.87)
         
-                    polarity() # Run the polarity function on start 
-      
+                    polarity() # Run the polarity function on start                                
                 # Text Button 
                 self.text = tk.PhotoImage(file='images/text_img.png')
                 self.text_btn = tk.Button(self.nav_frame,bg=gray,image=self.text,activebackground=primary,bd=0,command=text)
                 self.text_btn.place(relx=0.1,rely=0.16,width=67,height=50)
                 tooltip.CreateToolTip(self.text_btn,'Type text')
                 def doc():
+                    self.master.title("Sentiment247  >  File")
                     # Configure Colour
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=gray)
@@ -514,7 +606,7 @@ class App:
                     self.doc_btn.place_configure(relx=0.13)
                     self.voice_btn.place_configure(relx=0.10)
                     self.link_btn.place_configure(relx=0.10)
-                    self.logo_lbl.place_configure(relx=0,rely=0.248)
+                    self.logo_lbl.place_configure(relx=0,rely=0.247)
                     # Remove every widget that stands in your way
                     for w in self.main_frame.winfo_children():
                         w.destroy()
@@ -522,6 +614,7 @@ class App:
                         w.destroy()
                     #=============Polarity and Depression functions===========
                     def polarity():
+                        self.master.title("Sentiment247  >  File  >  Polarity")
                         self.btn_lbl.place(relx=0,rely=0.87)
                         self.pol_btn.configure(fg=foreground)
                         self.dep_btn.configure(fg=gray)
@@ -589,6 +682,7 @@ class App:
                     self.pol_btn.place(relx=0.02,rely=0.64,width=410)
         
                     def depression():
+                        self.master.title("Sentiment247  >  File  >  Depression")
                         self.btn_lbl.place(relx=0.51,rely=0.87)
                         self.pol_btn.configure(fg=gray)
                         self.dep_btn.configure(fg=foreground)
@@ -665,8 +759,9 @@ class App:
                 self.doc = tk.PhotoImage(file='images/doc_img.png')           
                 self.doc_btn = tk.Button(self.nav_frame,bg=primary,image=self.doc,activebackground=primary,bd=0,command=doc)
                 self.doc_btn.place(relx=0.1,rely=0.25,width=67,height=50)
-                tooltip.CreateToolTip(self.doc_btn,'Attach document')
+                tooltip.CreateToolTip(self.doc_btn,'Attach file')
                 def voice():
+                    self.master.title("Sentiment247  >  Voice Record")
                     # Configure Colour
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=primary)
@@ -677,7 +772,7 @@ class App:
                     self.doc_btn.place_configure(relx=0.10)
                     self.voice_btn.place_configure(relx=0.13)
                     self.link_btn.place_configure(relx=0.10)
-                    self.logo_lbl.place_configure(relx=0,rely=0.338)
+                    self.logo_lbl.place_configure(relx=0,rely=0.337)
                     # Remove every widget that stands in your way
                     for w in self.main_frame.winfo_children():
                         w.destroy()
@@ -685,6 +780,7 @@ class App:
                         w.destroy()
                     #=============Polarity and Depression functions===========
                     def polarity():
+                        self.master.title("Sentiment247  >  Voice Record  >  Polarity")
                         self.btn_lbl.place(relx=0,rely=0.87)
                         self.pol_btn.configure(fg=foreground)
                         self.dep_btn.configure(fg=gray)
@@ -697,11 +793,11 @@ class App:
                         self.comingsoon_info.place(relx=0.36,rely=0.55)
                         self.comingsoon_info2 = tk.Label(self.main_frame,text="We would let you know when this feature is up.",fg=foreground,bg=gray,font=('normal',10))
                         self.comingsoon_info2.place(relx=0.32,rely=0.613)
-        
                     self.pol_btn = tk.Button(self.top_frame,text='Detect Polarity',font=('arial',9,'bold'),bg=primary,activebackground=primary,fg=foreground,bd=0,command=polarity)
                     self.pol_btn.place(relx=0.02,rely=0.64,width=410)
         
                     def depression():
+                        self.master.title("Sentiment247  >  Voice Record  >  Depression")
                         self.btn_lbl.place(relx=0.51,rely=0.87)
                         self.pol_btn.configure(fg=gray)
                         self.dep_btn.configure(fg=foreground)
@@ -719,6 +815,7 @@ class App:
                 self.voice_btn.place(relx=0.1,rely=0.34,width=67,height=50)
                 tooltip.CreateToolTip(self.voice_btn,'Voice record')
                 def link():
+                    self.master.title("Sentiment247  >  Social Media Post")
                     # Configure Colour
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=primary)
@@ -798,6 +895,7 @@ class App:
                             if is_connected(): # If there is internet connection
                                 load_lbl.unload()
                                 link_widgets()
+                                self.master.title("Sentiment247  >  Social Media Post  >  Polarity")
                             else: 
                                 load_lbl.unload()
                                 self.lbl_404 = tk.PhotoImage(file='images/error-404.png')
@@ -825,6 +923,7 @@ class App:
                             if is_connected(): # If there is internet connection
                                 load_lbl.unload()
                                 link_widgets()
+                                self.master.title("Sentiment247  >  Social Media Post  >  Depression")
                             else: 
                                 load_lbl.unload()
                                 self.lbl_404 = tk.PhotoImage(file='images/error-404.png')
@@ -848,19 +947,54 @@ class App:
                 self.link_btn = tk.Button(self.nav_frame,bg=primary,image=self.link,activebackground=primary,bd=0,command=link)
                 self.link_btn.place(relx=0.1,rely=0.43,width=67,height=50)
                 tooltip.CreateToolTip(self.link_btn,'Social media post')                
+                def settings():
+                    self.master.title("Sentiment247  >  Settings")
+                    # Configure Colour
+                    self.text_btn.configure(bg=primary)
+                    self.doc_btn.configure(bg=primary)
+                    self.voice_btn.configure(bg=primary)
+                    self.link_btn.configure(bg=primary)
+                    # Configure Position
+                    self.text_btn.place_configure(relx=0.10)
+                    self.doc_btn.place_configure(relx=0.10)
+                    self.voice_btn.place_configure(relx=0.10)
+                    self.link_btn.place_configure(relx=0.10)
+                    self.logo_lbl.place_forget()
+                    # Remove every widget that stands in your way
+                    for w in self.main_frame.winfo_children():
+                        w.destroy()
+                    for w in self.top_frame.winfo_children():
+                        w.destroy()
+                    
+                    self.settings_lbl = tk.Label(self.top_frame,text='Settings',font=('arial',12,'bold'),bg=primary,fg=foreground,bd=0)
+                    self.settings_lbl.place(relx=0.02,rely=0.64)
+
+                    self.notif_img = tk.PhotoImage(file='images/notification.png')
+                    self.notif_lbl = tk.Label(self.main_frame,text='Notifications',font=('normal',11,'bold'),image=self.notif_img,compound='left',bg=gray,fg=foreground)
+                    self.notif_lbl.place(relx=0.154,rely=0.04)
+                    self.notification = tk.Frame(self.main_frame,bg=primary,relief='raised',bd=1)
+                    self.notification.place(relx=0.185,rely=0.09,width=520,height=170)
+
+                    self.theme_img = tk.PhotoImage(file='images/theme.png')
+                    self.theme_lbl = tk.Label(self.main_frame,text='Appearance',font=('normal',11,'bold'),image=self.theme_img,compound='left',bg=gray,fg=foreground)
+                    self.theme_lbl.place(relx=0.154,rely=0.45)
+                    self.prefrences = tk.Frame(self.main_frame,bg=primary,relief='raised',bd=1)
+                    self.prefrences.place(relx=0.185,rely=0.5,width=520,height=230)
+                    
+                    self.light_img = tk.PhotoImage(file='images/light.png')
+                    self.dark_img = tk.PhotoImage(file='images/dark.png')
+                    i = tk.StringVar(self.master, "1")
+                    self.light = tk.Radiobutton(self.prefrences,text='Light',image=self.light_img,bg=primary,activebackground=primary,compound='top',font=("normal",10),value="1",variable=i)
+                    self.dark = tk.Radiobutton(self.prefrences,text='Dark',image=self.dark_img,bg=primary,activebackground=primary,compound='top',font=("normal",10),value="2",variable=i)
+                    self.light.place(relx=0.05,rely=0.15) 
+                    self.dark.place(relx=0.41,rely=0.15)
+                    
+                self.settings_img = tk.PhotoImage(file='images/settings.png')
+                self.settings = tk.Button(self.nav_frame,bg=primary,activebackground=primary,image=self.settings_img,bd=0,command=settings)
+                self.settings.place(relx=0.20,rely=0.93)
                 
                 text() # Run the text function on start
-
-                def toggle():
-                    if self.toggle_btn['image'] == 'pyimage22':
-                        self.toggle_btn.configure(image=self.light)
-                    else:
-                        self.toggle_btn.configure(image=self.dark)
-                self.light = tk.PhotoImage(file='images/toggle_light.png')
-                self.dark = tk.PhotoImage(file='images/toggle_dark.png')
-                self.toggle_btn = tk.Button(self.nav_frame,bg=primary,activebackground=primary,image=self.dark,bd=0,command=toggle)
-                self.toggle_btn.place(relx=0.20,rely=0.93)
-
+              
             # Label for the loader gif
             load_lbl = loading.ImageLabel(self.master,bg=primary)
             load_lbl.place(relx=0.45,rely=0.40,width=70,height=70)
