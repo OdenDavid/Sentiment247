@@ -52,7 +52,7 @@ class App:
                 widget.destroy()
             def continue_():
                 #=============Top Frame========================
-                self.top_frame = tk.Frame(self.master,width=823,height=80,bg=primary,relief='flat',bd=0)
+                self.top_frame = tk.Frame(self.master,width=828,height=77,bg=primary,relief='groove',bd=1)
                 self.top_frame.place(relx=0.078,rely=0)
                 #=============Main Frame=======================
                 self.main_frame = tk.Frame(self.master,width=820,height=570,bg=gray)
@@ -340,7 +340,7 @@ class App:
                         colors = c.fetchall()
                         for color in colors:
                             primary, foreground, gray = color[0], color[1], color[2]
-                        self.btn_lbl.place(relx=0,rely=0.87)
+                        self.btn_lbl.place(relx=0,rely=0.91)
                         self.pol_btn.configure(fg=foreground)
                         self.dep_btn.configure(fg=gray)
                         # Remove every widget that stands in your way
@@ -412,97 +412,18 @@ class App:
                             w.configure(state=tk.DISABLED)
                         for w in self.neg_frame.winfo_children(): # Negative Frame
                             w.configure(state=tk.DISABLED)  
-
-                        #===========Toggle==========
-                        """def toggle_main():                
-                            if self.toggle_btn['image'] == 'pyimage18':
-                                self.toggle_btn.configure(image=self.light)
-                            else:
-                                self.toggle_btn.configure(image=self.dark)
-                            # Get current colors
-                            c.execute("SELECT * FROM Color")
-                            colors = c.fetchall()
-                            for color in colors:
-                                primary, foreground, gray = color[0], color[1], color[2]
-                            if primary == '#ffffff': # That means we are on light mode
-                                primary, foreground, gray = '#181818', '#ffffff', '#3d3d3d'
-                                self.master.configure(bg=primary)
-                                self.nav_frame.configure(bg=primary)
-                                for widget in self.nav_frame.winfo_children():
-                                    widget.configure(bg=primary,activebackground=primary)
-                                    if str(widget).split('!')[-1] == 'label':
-                                        widget.configure(fg=gray)
-                                    if str(widget).split('!')[-1] == 'button':
-                                        widget.configure(bg=gray)  
-                                self.top_frame.configure(bg=primary)
-                                self.pol_btn.configure(bg=primary,activebackground=primary,fg=foreground)
-                                self.dep_btn.configure(bg=primary,activebackground=primary,fg=gray)
-                                self.btn_lbl.configure(bg=primary)
-                                self.main_frame.configure(bg=gray)
-                                for widget in self.main_frame.winfo_children():
-                                    if str(widget).split('!')[-1] == 'button':
-                                        widget.configure(bg='#ecb22e',fg=primary)
-                                    if str(widget).split('!')[-1] == 'text':
-                                        widget.configure(bg=primary,fg=foreground)
-                                    if str(widget).split('!')[-1][0] == 'f':
-                                        widget.configure(bg=primary)
-                                        for widget2 in widget.winfo_children():
-                                            widget2.configure(state=tk.NORMAL)
-                                            if str(widget2).split('!')[-1] != 'label2':
-                                                widget2.configure(bg=primary)     
-                                            if str(widget2).split('!')[-1] == 'label3':
-                                                widget2.configure(fg=foreground)
-                                        for widget2 in widget.winfo_children():
-                                            if str(widget2).split('!')[-1] != 'label':
-                                                widget2.configure(state=tk.DISABLED)
-                                # update database
-                                c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
-                                conn.commit()
-                            elif primary == '#181818': # That means we are on dark mode:
-                                primary, foreground, gray = '#ffffff', '#222222', '#e0e0e0'
-                                self.master.configure(bg=primary)
-                                self.nav_frame.configure(bg=primary)
-                                for widget in self.nav_frame.winfo_children():
-                                    widget.configure(bg=primary,activebackground=primary)
-                                    if str(widget).split('!')[-1] == 'label':
-                                        widget.configure(fg=gray)
-                                    if str(widget).split('!')[-1] == 'button':
-                                        widget.configure(bg=gray)  
-                                self.top_frame.configure(bg=primary)
-                                self.pol_btn.configure(bg=primary,activebackground=primary,fg=foreground)
-                                self.dep_btn.configure(bg=primary,activebackground=primary,fg=gray)
-                                self.btn_lbl.configure(bg=primary)
-                                self.main_frame.configure(bg=gray)
-                                for widget in self.main_frame.winfo_children():
-                                    if str(widget).split('!')[-1] == 'button':
-                                        widget.configure(bg='#ecb22e',fg=primary)
-                                    if str(widget).split('!')[-1] == 'text':
-                                        widget.configure(bg=primary,fg=foreground)
-                                    if str(widget).split('!')[-1][0] == 'f':
-                                        widget.configure(bg=primary)
-                                        for widget2 in widget.winfo_children():
-                                            widget2.configure(state=tk.NORMAL)
-                                            if str(widget2).split('!')[-1] != 'label2':
-                                                widget2.configure(bg=primary)                                         
-                                            if str(widget2).split('!')[-1] == 'label3':
-                                                widget2.configure(fg=foreground)
-                                        for widget2 in widget.winfo_children():
-                                            if str(widget2).split('!')[-1] != 'label':
-                                                widget2.configure(state=tk.DISABLED)
-                                            
-                                # update database
-                                c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
-                                conn.commit()
-                            else:
-                                pass                       
-                        self.toggle_btn.configure(command=toggle_main)"""
                     # Detect Polarity Button    
                     self.pol_btn = tk.Button(self.top_frame,text='Detect Polarity',font=('arial',9,'bold'),bg=primary,activebackground=primary,fg=foreground,bd=0,command=polarity)
                     self.pol_btn.place(relx=0.02,rely=0.64,width=410)
         
                     def depression():
                         self.master.title("Sentiment247  >  Text  >  Depression")
-                        self.btn_lbl.place(relx=0.51,rely=0.87)
+                        # Get current colors
+                        c.execute("SELECT * FROM Color")
+                        colors = c.fetchall()
+                        for color in colors:
+                            primary, foreground, gray = color[0], color[1], color[2]
+                        self.btn_lbl.place(relx=0.51,rely=0.91)
                         self.pol_btn.configure(fg=gray)
                         self.dep_btn.configure(fg=foreground)  
                         
@@ -586,7 +507,7 @@ class App:
         
                     self.btn = tk.PhotoImage(file='images/btn_img.png')
                     self.btn_lbl = tk.Label(self.top_frame,bg=primary,image=self.btn)
-                    self.btn_lbl.place(relx=0.01,rely=0.87)
+                    self.btn_lbl.place(relx=0.01,rely=0.91)
         
                     polarity() # Run the polarity function on start                                
                 # Text Button 
@@ -596,6 +517,11 @@ class App:
                 tooltip.CreateToolTip(self.text_btn,'Type text')
                 def doc():
                     self.master.title("Sentiment247  >  File")
+                    # Get current colors
+                    c.execute("SELECT * FROM Color")
+                    colors = c.fetchall()
+                    for color in colors:
+                        primary, foreground, gray = color[0], color[1], color[2]
                     # Configure Colour
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=gray)
@@ -615,7 +541,12 @@ class App:
                     #=============Polarity and Depression functions===========
                     def polarity():
                         self.master.title("Sentiment247  >  File  >  Polarity")
-                        self.btn_lbl.place(relx=0,rely=0.87)
+                        # Get current colors
+                        c.execute("SELECT * FROM Color")
+                        colors = c.fetchall()
+                        for color in colors:
+                            primary, foreground, gray = color[0], color[1], color[2]
+                        self.btn_lbl.place(relx=0,rely=0.91)
                         self.pol_btn.configure(fg=foreground)
                         self.dep_btn.configure(fg=gray)
                         # Remove every widget that stands in your way
@@ -683,7 +614,12 @@ class App:
         
                     def depression():
                         self.master.title("Sentiment247  >  File  >  Depression")
-                        self.btn_lbl.place(relx=0.51,rely=0.87)
+                        # Get current colors
+                        c.execute("SELECT * FROM Color")
+                        colors = c.fetchall()
+                        for color in colors:
+                            primary, foreground, gray = color[0], color[1], color[2]
+                        self.btn_lbl.place(relx=0.51,rely=0.91)
                         self.pol_btn.configure(fg=gray)
                         self.dep_btn.configure(fg=foreground)
                         # Remove every widget that stands in your way
@@ -752,7 +688,7 @@ class App:
         
                     self.btn = tk.PhotoImage(file='images/btn_img.png')
                     self.btn_lbl = tk.Label(self.top_frame,bg=primary,image=self.btn)
-                    self.btn_lbl.place(relx=0.01,rely=0.87)
+                    self.btn_lbl.place(relx=0.01,rely=0.91)
         
                     polarity() # Run the polarity function on start
                 # Attach Document Button 
@@ -762,6 +698,11 @@ class App:
                 tooltip.CreateToolTip(self.doc_btn,'Attach file')
                 def voice():
                     self.master.title("Sentiment247  >  Voice Record")
+                    # Get current colors
+                    c.execute("SELECT * FROM Color")
+                    colors = c.fetchall()
+                    for color in colors:
+                        primary, foreground, gray = color[0], color[1], color[2]
                     # Configure Colour
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=primary)
@@ -781,7 +722,7 @@ class App:
                     #=============Polarity and Depression functions===========
                     def polarity():
                         self.master.title("Sentiment247  >  Voice Record  >  Polarity")
-                        self.btn_lbl.place(relx=0,rely=0.87)
+                        self.btn_lbl.place(relx=0,rely=0.91)
                         self.pol_btn.configure(fg=foreground)
                         self.dep_btn.configure(fg=gray)
         
@@ -798,7 +739,7 @@ class App:
         
                     def depression():
                         self.master.title("Sentiment247  >  Voice Record  >  Depression")
-                        self.btn_lbl.place(relx=0.51,rely=0.87)
+                        self.btn_lbl.place(relx=0.51,rely=0.91)
                         self.pol_btn.configure(fg=gray)
                         self.dep_btn.configure(fg=foreground)
                     self.dep_btn = tk.Button(self.top_frame,text='Detect Depression',font=('arial',9,'bold'),bg=primary,activebackground=primary,fg=gray,bd=0,command=depression)
@@ -806,7 +747,7 @@ class App:
         
                     self.btn = tk.PhotoImage(file='images/btn_img.png')
                     self.btn_lbl = tk.Label(self.top_frame,bg=primary,image=self.btn)
-                    self.btn_lbl.place(relx=0.01,rely=0.87)
+                    self.btn_lbl.place(relx=0.01,rely=0.91)
         
                     polarity() # Run the polarity function on start
                 # Voice Record Button 
@@ -816,6 +757,11 @@ class App:
                 tooltip.CreateToolTip(self.voice_btn,'Voice record')
                 def link():
                     self.master.title("Sentiment247  >  Social Media Post")
+                    # Get current colors
+                    c.execute("SELECT * FROM Color")
+                    colors = c.fetchall()
+                    for color in colors:
+                        primary, foreground, gray = color[0], color[1], color[2]
                     # Configure Colour
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=primary)
@@ -883,7 +829,12 @@ class App:
                     def polarity():
                         for w in self.main_frame.winfo_children():
                             w.destroy()
-                        self.btn_lbl.place(relx=0,rely=0.87)
+                        # Get current colors
+                        c.execute("SELECT * FROM Color")
+                        colors = c.fetchall()
+                        for color in colors:
+                            primary, foreground, gray = color[0], color[1], color[2]
+                        self.btn_lbl.place(relx=0,rely=0.91)
                         self.pol_btn.configure(fg=foreground)
                         self.dep_btn.configure(fg=gray)
         
@@ -909,9 +860,14 @@ class App:
                     self.pol_btn.place(relx=0.02,rely=0.64,width=410)
         
                     def depression():
+                        # Get current colors
+                        c.execute("SELECT * FROM Color")
+                        colors = c.fetchall()
+                        for color in colors:
+                            primary, foreground, gray = color[0], color[1], color[2]
                         for w in self.main_frame.winfo_children():
                             w.destroy()
-                        self.btn_lbl.place(relx=0.51,rely=0.87)
+                        self.btn_lbl.place(relx=0.51,rely=0.91)
                         self.pol_btn.configure(fg=gray)
                         self.dep_btn.configure(fg=foreground)
         
@@ -938,7 +894,7 @@ class App:
         
                     self.btn = tk.PhotoImage(file='images/btn_img.png')
                     self.btn_lbl = tk.Label(self.top_frame,bg=primary,image=self.btn)
-                    self.btn_lbl.place(relx=0.01,rely=0.87)
+                    self.btn_lbl.place(relx=0.01,rely=0.91)
                     
                     polarity() # Run the polarity function
                  # Attach Document Button    
@@ -947,8 +903,14 @@ class App:
                 self.link_btn = tk.Button(self.nav_frame,bg=primary,image=self.link,activebackground=primary,bd=0,command=link)
                 self.link_btn.place(relx=0.1,rely=0.43,width=67,height=50)
                 tooltip.CreateToolTip(self.link_btn,'Social media post')                
+                
                 def settings():
                     self.master.title("Sentiment247  >  Settings")
+                    # Get current colors
+                    c.execute("SELECT * FROM Color")
+                    colors = c.fetchall()
+                    for color in colors:
+                        primary, foreground, gray = color[0], color[1], color[2]
                     # Configure Colour
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=primary)
@@ -966,28 +928,140 @@ class App:
                     for w in self.top_frame.winfo_children():
                         w.destroy()
                     
-                    self.settings_lbl = tk.Label(self.top_frame,text='Settings',font=('arial',12,'bold'),bg=primary,fg=foreground,bd=0)
-                    self.settings_lbl.place(relx=0.02,rely=0.64)
+                    self.settings_lbl = tk.Label(self.top_frame,text='Settings',font=('arial',15,'bold'),bg=primary,fg=foreground,bd=0)
+                    self.settings_lbl.place(relx=0.02,rely=0.61)
 
                     self.notif_img = tk.PhotoImage(file='images/notification.png')
-                    self.notif_lbl = tk.Label(self.main_frame,text='Notifications',font=('normal',11,'bold'),image=self.notif_img,compound='left',bg=gray,fg=foreground)
+                    self.notif_lbl = tk.Label(self.main_frame,text='Notifications',font=('arial',11,'bold'),image=self.notif_img,compound='left',bg=gray,fg=foreground)
                     self.notif_lbl.place(relx=0.154,rely=0.04)
+                    
                     self.notification = tk.Frame(self.main_frame,bg=primary,relief='raised',bd=1)
                     self.notification.place(relx=0.185,rely=0.09,width=520,height=170)
+                    self.lbl1 = tk.Label(self.notification,text='Notify me when...',font=('normal',10,'bold'),bg=primary,fg=foreground)
+                    self.lbl1.place(relx=0.05,rely=0.03)
+                    w = tk.IntVar()
+                    x = tk.IntVar()
+                    y = tk.IntVar()
+                    z = tk.IntVar()
+                    self.predictionsmade = tk.Checkbutton(self.notification,text='Predictions have been made',bg=primary,fg=foreground,activebackground=primary,selectcolor=primary,font=("normal",10),onvalue=1,offvalue=0,variable=w)
+                    self.predictionsmade.place(relx=0.05,rely=0.2)
+                    self.newmodel = tk.Checkbutton(self.notification,text='New model available',bg=primary,fg=foreground,activebackground=primary,selectcolor=primary,font=("normal",10),onvalue=1,offvalue=0,variable=x)
+                    self.newmodel.place(relx=0.05,rely=0.4)
+                    self.visulization = tk.Checkbutton(self.notification,text='Visualizations have been plotted',bg=primary,fg=foreground,selectcolor=primary,activebackground=primary,font=("normal",10),onvalue=1,offvalue=0,variable=y)
+                    self.visulization.place(relx=0.05,rely=0.6)
+                    self.nothing = tk.Checkbutton(self.notification,text='Nothing',bg=primary,fg=foreground,activebackground=primary,selectcolor=primary,font=("normal",10),onvalue=1,offvalue=0,variable=z)
+                    self.nothing.place(relx=0.05,rely=0.8)
 
                     self.theme_img = tk.PhotoImage(file='images/theme.png')
-                    self.theme_lbl = tk.Label(self.main_frame,text='Appearance',font=('normal',11,'bold'),image=self.theme_img,compound='left',bg=gray,fg=foreground)
+                    self.theme_lbl = tk.Label(self.main_frame,text='Appearance',font=('arial',11,'bold'),image=self.theme_img,compound='left',bg=gray,fg=foreground)
                     self.theme_lbl.place(relx=0.154,rely=0.45)
+                    
                     self.prefrences = tk.Frame(self.main_frame,bg=primary,relief='raised',bd=1)
                     self.prefrences.place(relx=0.185,rely=0.5,width=520,height=230)
                     
+                    self.lbl2 = tk.Label(self.prefrences,text='How should i look?',font=('normal',10,'bold'),bg=primary,fg=foreground)
+                    self.lbl2.place(relx=0.05,rely=0.03)
                     self.light_img = tk.PhotoImage(file='images/light.png')
                     self.dark_img = tk.PhotoImage(file='images/dark.png')
-                    i = tk.StringVar(self.master, "1")
-                    self.light = tk.Radiobutton(self.prefrences,text='Light',image=self.light_img,bg=primary,activebackground=primary,compound='top',font=("normal",10),value="1",variable=i)
-                    self.dark = tk.Radiobutton(self.prefrences,text='Dark',image=self.dark_img,bg=primary,activebackground=primary,compound='top',font=("normal",10),value="2",variable=i)
-                    self.light.place(relx=0.05,rely=0.15) 
-                    self.dark.place(relx=0.41,rely=0.15)
+                    
+
+                    def dark():
+                        # Get current colors
+                        c.execute("SELECT * FROM Color")
+                        colors = c.fetchall()
+                        for color in colors:
+                            primary, foreground, gray = color[0], color[1], color[2]
+                        if primary == '#ffffff': # That means we are on light mode
+                            primary, foreground, gray = '#181818', '#ffffff', '#3d3d3d'
+                            
+                            self.master.configure(bg=primary)
+                            self.nav_frame.configure(bg=primary)
+                            for widget in self.nav_frame.winfo_children():
+                                widget.configure(bg=primary)
+                                if str(widget).split('!')[-1] == 'label':
+                                    widget.configure(fg=gray)
+                            
+                            self.top_frame.configure(bg=primary)
+                            self.settings_lbl.configure(bg=primary,fg=foreground)
+
+                            self.main_frame.configure(bg=gray)
+                            for widget in self.main_frame.winfo_children():
+                                if str(widget).split('!')[-1][0] == 'l':
+                                    widget.configure(bg=gray,fg=foreground)
+                                if str(widget).split('!')[-1] == 'frame4':
+                                    widget.configure(bg=primary)
+                                    for widget2 in widget.winfo_children():
+                                        if str(widget2).split('!')[-1][0] == 'l':
+                                            widget2.configure(bg=primary,fg=foreground)
+                                        else:
+                                            widget2.configure(bg=primary,fg=foreground,activebackground=primary,selectcolor=primary)
+                                if str(widget).split('!')[-1] == 'frame5':
+                                    widget.configure(bg=primary)
+                                    for widget2 in widget.winfo_children():
+                                        if str(widget2).split('!')[-1][0] == 'l':
+                                            widget2.configure(bg=primary,fg=foreground)
+                                        else:
+                                            widget2.configure(bg=primary,fg=foreground,activebackground=primary,selectcolor=primary)
+
+                            # update database
+                            c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
+                            conn.commit()
+                        else:
+                            pass   
+                    
+                    def light():
+                        # Get current colors
+                        c.execute("SELECT * FROM Color")
+                        colors = c.fetchall()
+                        for color in colors:
+                            primary, foreground, gray = color[0], color[1], color[2]
+                        if primary == '#181818': # That means we are on light mode
+                            primary, foreground, gray = '#ffffff', '#222222', '#e0e0e0'
+                            
+                            self.master.configure(bg=primary)
+                            self.nav_frame.configure(bg=primary)
+                            for widget in self.nav_frame.winfo_children():
+                                widget.configure(bg=primary)
+                                if str(widget).split('!')[-1] == 'label':
+                                    widget.configure(fg=gray)
+                            
+                            self.top_frame.configure(bg=primary)
+                            self.settings_lbl.configure(bg=primary,fg=foreground)
+
+                            self.main_frame.configure(bg=gray)
+                            for widget in self.main_frame.winfo_children():
+                                if str(widget).split('!')[-1][0] == 'l':
+                                    widget.configure(bg=gray,fg=foreground)
+                                if str(widget).split('!')[-1] == 'frame4':
+                                    widget.configure(bg=primary)
+                                    for widget2 in widget.winfo_children():
+                                        if str(widget2).split('!')[-1][0] == 'l':
+                                            widget2.configure(bg=primary,fg=foreground)
+                                        else:
+                                            widget2.configure(bg=primary,fg=foreground,activebackground=primary,selectcolor=primary)
+                                if str(widget).split('!')[-1] == 'frame5':
+                                    widget.configure(bg=primary)
+                                    for widget2 in widget.winfo_children():
+                                        if str(widget2).split('!')[-1][0] == 'l':
+                                            widget2.configure(bg=primary,fg=foreground)
+                                        else:
+                                            widget2.configure(bg=primary,fg=foreground,activebackground=primary,selectcolor=primary)
+
+                            # update database
+                            c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
+                            conn.commit()
+                        else:
+                            pass 
+                    
+                    self.selection = tk.StringVar()
+                    if primary == '#ffffff':
+                        self.selection.set("light")
+                    else:
+                        self.selection.set("dark")
+                    self.light = tk.Radiobutton(self.prefrences,text='Light',image=self.light_img,bg=primary,fg=foreground,activebackground=primary,selectcolor=primary,compound='top',font=("normal",10),value="light",variable=self.selection,command=light)
+                    self.dark = tk.Radiobutton(self.prefrences,text='Dark',image=self.dark_img,bg=primary,fg=foreground,activebackground=primary,selectcolor=primary,compound='top',font=("normal",10),value="dark",variable=self.selection,command=dark)
+                    self.light.place(relx=0.13,rely=0.15) 
+                    self.dark.place(relx=0.50,rely=0.15)
                     
                 self.settings_img = tk.PhotoImage(file='images/settings.png')
                 self.settings = tk.Button(self.nav_frame,bg=primary,activebackground=primary,image=self.settings_img,bd=0,command=settings)
