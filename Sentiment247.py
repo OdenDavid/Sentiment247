@@ -310,6 +310,7 @@ class App:
                                        
                 def text():
                     self.master.title("Sentiment247  >  Text")
+                    self.settings.configure(state=tk.NORMAL)
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
@@ -517,6 +518,7 @@ class App:
                 tooltip.CreateToolTip(self.text_btn,'Type text')
                 def doc():
                     self.master.title("Sentiment247  >  File")
+                    self.settings.configure(state=tk.NORMAL)
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
@@ -698,6 +700,7 @@ class App:
                 tooltip.CreateToolTip(self.doc_btn,'Attach file')
                 def voice():
                     self.master.title("Sentiment247  >  Voice Record")
+                    self.settings.configure(state=tk.NORMAL)
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
@@ -757,6 +760,7 @@ class App:
                 tooltip.CreateToolTip(self.voice_btn,'Voice record')
                 def link():
                     self.master.title("Sentiment247  >  Social Media Post")
+                    self.settings.configure(state=tk.NORMAL)
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
@@ -906,23 +910,24 @@ class App:
                 
                 def settings():
                     self.master.title("Sentiment247  >  Settings")
+                    self.settings.configure(state=tk.DISABLED)
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
                     for color in colors:
                         primary, foreground, gray = color[0], color[1], color[2]
-                    # Configure Colour
+                    # Configure Colour 
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=primary)
                     self.voice_btn.configure(bg=primary)
                     self.link_btn.configure(bg=primary)
-                    # Configure Position
+                    # Configure Position 
                     self.text_btn.place_configure(relx=0.10)
                     self.doc_btn.place_configure(relx=0.10)
                     self.voice_btn.place_configure(relx=0.10)
                     self.link_btn.place_configure(relx=0.10)
                     self.logo_lbl.place_forget()
-                    # Remove every widget that stands in your way
+                    # Remove every widget that stands in your way 
                     for w in self.main_frame.winfo_children():
                         w.destroy()
                     for w in self.top_frame.winfo_children():
@@ -967,13 +972,16 @@ class App:
 
                     def dark():
                         # Get current colors
-                        c.execute("SELECT * FROM Color")
-                        colors = c.fetchall()
-                        for color in colors:
-                            primary, foreground, gray = color[0], color[1], color[2]
-                        if primary == '#ffffff': # That means we are on light mode
+                        #c.execute("SELECT * FROM Color")
+                        #colors = c.fetchall()
+                        #for color in colors:
+                         #   primary, foreground, gray = color[0], color[1], color[2]
+                        if self.nav_frame['background'] == '#ffffff': # That means we are on light mode
                             primary, foreground, gray = '#181818', '#ffffff', '#3d3d3d'
-                            
+                            # update database
+                            c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
+                            conn.commit()
+
                             self.master.configure(bg=primary)
                             self.nav_frame.configure(bg=primary)
                             for widget in self.nav_frame.winfo_children():
@@ -1002,22 +1010,22 @@ class App:
                                             widget2.configure(bg=primary,fg=foreground)
                                         else:
                                             widget2.configure(bg=primary,fg=foreground,activebackground=primary,selectcolor=primary)
-
-                            # update database
-                            c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
-                            conn.commit()
                         else:
                             pass   
                     
                     def light():
                         # Get current colors
-                        c.execute("SELECT * FROM Color")
-                        colors = c.fetchall()
-                        for color in colors:
-                            primary, foreground, gray = color[0], color[1], color[2]
-                        if primary == '#181818': # That means we are on light mode
+                        #c.execute("SELECT * FROM Color")
+                        #colors = c.fetchall()
+                        #for color in colors:
+                         #   primary, foreground, gray = color[0], color[1], color[2]
+                        if self.nav_frame['background'] == '#181818': # That means we are on light mode
                             primary, foreground, gray = '#ffffff', '#222222', '#e0e0e0'
                             
+                            # update database
+                            c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
+                            conn.commit()
+
                             self.master.configure(bg=primary)
                             self.nav_frame.configure(bg=primary)
                             for widget in self.nav_frame.winfo_children():
@@ -1046,10 +1054,6 @@ class App:
                                             widget2.configure(bg=primary,fg=foreground)
                                         else:
                                             widget2.configure(bg=primary,fg=foreground,activebackground=primary,selectcolor=primary)
-
-                            # update database
-                            c.execute("UPDATE Color SET 'Primary' = '"+primary+"', 'Foreground' = '"+foreground+"', 'Gray' = '"+gray+"'")
-                            conn.commit()
                         else:
                             pass 
                     
@@ -1066,6 +1070,7 @@ class App:
                 self.settings_img = tk.PhotoImage(file='images/settings.png')
                 self.settings = tk.Button(self.nav_frame,bg=primary,activebackground=primary,image=self.settings_img,bd=0,command=settings)
                 self.settings.place(relx=0.20,rely=0.93)
+                self.settings.configure(state=tk.NORMAL)
                 
                 text() # Run the text function on start
               

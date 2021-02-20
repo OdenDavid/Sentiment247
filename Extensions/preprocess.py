@@ -1,40 +1,27 @@
 # for text manipulation
 import nltk
-import string
 import re
 
 # importing different libraries for text processing
+from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize 
-from nltk.tag import pos_tag
+from nltk.stem import PorterStemmer
 
-def CleanMessage(message):
-    
-    # Removing usernames
-    message = re.sub(r'\w*@\w*', '', message)
 
-    # Removing URLs
-    message = re.sub(r'(https?:\/\/)(\s)*(www\.)?(\s)*((\w|\s)+\.)*([\w\-\s]+\/)*([\w\-]+)((\?)?[\w\s]*=\s*[\w\%&]*)*', '', message, flags=re.MULTILINE)
-    
-    stop_words = stopwords.words('english')
-    tokens = word_tokenize(message)
-    
-    cleaned_tokens = []
-    
-    for token, tag in pos_tag(tokens):
-        if tag.startswith("NN"):
-            pos = 'n'
-        elif tag.startswith('VB'):
-            pos = 'v'
-        else:
-            pos = 'a'
-            
-        lemmatizer = WordNetLemmatizer()
-        token = lemmatizer.lemmatize(token, pos)
-        
-        if token not in string.punctuation and token.lower() not in stop_words:
-            cleaned_tokens.append(token)
-
-    cleaned_message = ' '.join(cleaned_tokens)
-    return cleaned_message
+def process_message(message, lower_case = True, stem = True, stop_words = True, gram = 2):
+    if lower_case:
+        message = message.lower()
+    words = word_tokenize(message)
+    words = [w for w in words if len(w) > 2]
+    if gram > 1:
+        w = []
+        for i in range(len(words) - gram + 1):
+            w += [' '.join(words[i:i + gram])]
+        return w
+    if stop_words:
+        sw = stopwords.words('english')
+        words = [word for word in words if word not in sw]
+    if stem:
+        stemmer = PorterStemmer()
+        words = [stemmer.stem(word) for word in words]   
+    return words
