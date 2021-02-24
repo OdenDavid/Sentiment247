@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
-import functools
 
 from Extensions import loading, tooltip, hover
 import threading
@@ -13,7 +12,8 @@ import socket
 
 import sqlite3
 
-from Extensions import ocr, preprocess, PolarityScore
+from Extensions import ocr, DepressionScore, PolarityScore
+from Extensions.DepressionScore import TweetClassifier
 import pickle
 
 try:
@@ -52,14 +52,15 @@ class App:
                 widget.destroy()
             def continue_():
                 #=============Top Frame========================
-                self.top_frame = tk.Frame(self.master,width=828,height=77,bg=primary,relief='groove',bd=1)
+                self.top_frame = tk.Frame(self.master,width=828,height=77,bg=primary,relief='flat',bd=0)
                 self.top_frame.place(relx=0.078,rely=0)
-                #=============Main Frame=======================
-                self.main_frame = tk.Frame(self.master,width=820,height=570,bg=gray)
-                self.main_frame.place(relx=0.085,rely=0.12)
                 #===============Navigation Frame===============
                 self.nav_frame = tk.Frame(self.master,bg=primary,width=79,height=650,relief='groove',bd=1)
                 self.nav_frame.place(relx=0,rely=0)
+                #=============Main Frame=======================
+                self.main_frame = tk.Frame(self.master,width=821,height=572,bg=gray)
+                self.main_frame.place(relx=0.085,rely=0.115)
+                
                 
                 self.lbl = tk.Label(self.nav_frame,bg=primary,text='___________',fg=gray)
                 self.lbl.place(relx=0.07,rely=0.09)
@@ -78,10 +79,23 @@ class App:
                     except OSError:
                         pass
                     return False
-        
-                def polarity_widgets(content):
+
+                def polarity_widgets(content, source):
+                    # Get current colors
+                    c.execute("SELECT * FROM Color")
+                    colors = c.fetchall()
+                    for color in colors:
+                        primary, foreground, gray = color[0], color[1], color[2]
+
                     for w in self.main_frame.winfo_children():
-                        w.destroy()
+                        w.destroy()                   
+                    if source == "twitter":
+                        # Label for the twitter
+                        self.twitter = tk.PhotoImage(file='images/twitter.png')
+                        self.twitter_lbl = tk.Label(self.main_frame,image=self.twitter,bg=gray)
+                        self.twitter_lbl.place(relx=0.75,rely=0)
+                    else:
+                        pass
                     # Text Widget
                     self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,relief='groove',bd=1)
                     self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
@@ -146,10 +160,23 @@ class App:
                     for w in self.neg_frame.winfo_children(): # Negative Frame
                         w.configure(state=tk.DISABLED)                 
                         
-                def depressive_widgets(content):
+                def depressive_widgets(content, source):
+                    # Get current colors
+                    c.execute("SELECT * FROM Color")
+                    colors = c.fetchall()
+                    for color in colors:
+                        primary, foreground, gray = color[0], color[1], color[2]
                     # Remove every widget that stands in your way
                     for w in self.main_frame.winfo_children():
                         w.destroy()
+
+                    if source == "twitter":
+                        # Label for the twitter
+                        self.twitter = tk.PhotoImage(file='images/twitter.png')
+                        self.twitter_lbl = tk.Label(self.main_frame,image=self.twitter,bg=gray)
+                        self.twitter_lbl.place(relx=0.75,rely=0)
+                    else:
+                        pass
                     # Text Widget
                     self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,relief='groove',bd=1)
                     self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
@@ -164,52 +191,34 @@ class App:
                         else:
                             for w in self.main_frame.winfo_children():
                                 w.place_forget()
-                            # Label for the loader gif
-                            load_lbl = loading.ImageLabel(self.main_frame,bg=gray)
-                            load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
                             
-                            def clean():
-                                processed = preprocess.CleanMessage(content)
-                                if processed != "":
-                                    load_lbl.unload()
-                                    load_lbl.place_forget()
-                                    depressive_scorer(processed)                               
-                                else:
-                                    pass                            
-                            def load():
-                                load_lbl.load('images/load.gif')
-                            threading.Thread(target=clean).start()
-                            threading.Thread(target=load).start() 
+                            processed = DepressionScore.process_message(content)
+                            depressive_scorer(processed)    
+                                                       
                     # Submit Button
                     self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
                     self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
                     hover.Hover(self.submit)
                     #========Positive Frame======
-                    self.pos_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
+                    self.pos_frame = tk.Frame(self.main_frame,width=130,height=150,bg=primary,relief='raised',bd=1)
                     self.pos_frame.place(relx=0.28,rely=0.65)
                     # Positive Image
                     self.happy_img = tk.PhotoImage(file='images/happy.png')
                     self.happy_lbl = tk.Label(self.pos_frame,bg=primary,image=self.happy_img)
-                    self.happy_lbl.place(relx=0.26,rely=0.05)
+                    self.happy_lbl.place(relx=0.26,rely=0.09)
                     # Positive Label
                     self.positive_lbl = tk.Label(self.pos_frame,text='Positive',font=('normal',9,'bold'),fg='#008000',bg='#9de19d')
-                    self.positive_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
-                    # Positive Percentage
-                    self.positive_per = tk.Label(self.pos_frame,text='0%',font=('normal',10,'bold'),fg=foreground,bg=primary)
-                    self.positive_per.place(relx=0.415,rely=0.7)
+                    self.positive_lbl.place(relx=0.24,rely=0.65,width=70,height=20)
                     #========Depressive Frame======
-                    self.dep_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
+                    self.dep_frame = tk.Frame(self.main_frame,width=130,height=150,bg=primary,relief='raised',bd=1)
                     self.dep_frame.place(relx=0.53,rely=0.65)
                     # Depressive Image
                     self.depressive_img = tk.PhotoImage(file='images/sad.png')
                     self.depressive_lbl = tk.Label(self.dep_frame,bg=primary,image=self.depressive_img)
-                    self.depressive_lbl.place(relx=0.26,rely=0.05)
+                    self.depressive_lbl.place(relx=0.26,rely=0.09)
                     # Depressive Label
                     self.depressive_lbl = tk.Label(self.dep_frame,text='Depressive',font=('normal',9,'bold'),fg='#ec1c24',bg='#f6a4a8')
-                    self.depressive_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
-                    # Depressive Percentage
-                    self.depressive_per = tk.Label(self.dep_frame,text='0%',font=('normal',10,'bold'),fg=foreground,bg=primary)
-                    self.depressive_per.place(relx=0.415,rely=0.7)
+                    self.depressive_lbl.place(relx=0.24,rely=0.65,width=70,height=20)
                 
                     # Disable Frame Content By Defalult
                     for w in self.pos_frame.winfo_children(): # Positive Frame
@@ -269,20 +278,11 @@ class App:
                         for w in self.neu_frame.winfo_children(): # Neutral Frame
                             w.configure(state=tk.DISABLED)
                 
-                def depressive_scorer(content):
-        
-                    vectorizer = pickle.load(open('vectorizer.pickle','rb'))
-                    model = pickle.load(open('classifier.pickle','rb'))
-                    pred = model.predict_proba(vectorizer.transform([content]))[0]
-        
-                    # Create a new dictionary and convert the decimal values to percentage values 
-                    new_dict = {'positive':round(pred[0]*100),
-                                'depressive':round(pred[1]*100)}
-        
+                def depressive_scorer(processed_text):
+                    result = DepressionScore.RunModel(processed_text)
                     # Enable Frames
                     self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
                     self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
-                    self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
                     self.pos_frame.place(relx=0.28,rely=0.65)
                     self.dep_frame.place(relx=0.53,rely=0.65)
                     
@@ -291,26 +291,20 @@ class App:
                     for w in self.dep_frame.winfo_children(): # Depressive Frame
                         w.configure(state=tk.NORMAL)
                         
-                    new_values = list(new_dict.values()) # Create a new list of values(scores)
-                    self.positive_per.configure(text=str(new_values[0])+'%') # Configure the positive value
-                    self.depressive_per.configure(text=str(new_values[1])+'%') # Configure the depressive value
-        
-                    max_value = max(new_values) # Get the maximum value from the list
-                    max_index = new_values.index(max_value) # Get the index of the highest value in the list
-                    if max_index == 0: # If the maximum value is the positive
-                        self.dep_frame.configure(width=130,height=170)
+                    if result: # If the tweet is depressive
+                        self.dep_frame.configure(width=150,height=190)
+                        self.pos_frame.configure(width=130,height=150)
+                        for w in self.pos_frame.winfo_children(): # Depressive Frame
+                            w.configure(state=tk.DISABLED)
+                    else: # If the tweet is positive
+                        self.dep_frame.configure(width=130,height=150)
                         self.pos_frame.configure(width=150,height=190)
                         for w in self.dep_frame.winfo_children(): # Depressive Frame
-                            w.configure(state=tk.DISABLED)
-                    elif max_index == 1: # If the maximum value is the depressive
-                        self.dep_frame.configure(width=150,height=190)
-                        self.pos_frame.configure(width=130,height=170)
-                        for w in self.pos_frame.winfo_children(): # Depressive Frame
                             w.configure(state=tk.DISABLED)
                                        
                 def text():
                     self.master.title("Sentiment247  >  Text")
-                    self.settings.configure(state=tk.NORMAL)
+                    self.settings.place(relx=0.20,rely=0.93)
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
@@ -414,7 +408,7 @@ class App:
                         for w in self.neg_frame.winfo_children(): # Negative Frame
                             w.configure(state=tk.DISABLED)  
                     # Detect Polarity Button    
-                    self.pol_btn = tk.Button(self.top_frame,text='Detect Polarity',font=('arial',9,'bold'),bg=primary,activebackground=primary,fg=foreground,bd=0,command=polarity)
+                    self.pol_btn = tk.Button(self.top_frame,text='Detect Polarity',font=('Arial',9,'bold'),bg=primary,activebackground=primary,fg=foreground,bd=0,command=polarity)
                     self.pol_btn.place(relx=0.02,rely=0.64,width=410)
         
                     def depression():
@@ -452,7 +446,7 @@ class App:
                                 load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
                                 
                                 def clean():
-                                    processed = preprocess.CleanMessage(content)
+                                    processed = DepressionScore.process_message(content)
                                     if processed != "":
                                         load_lbl.unload()
                                         load_lbl.place_forget()
@@ -467,43 +461,35 @@ class App:
                         self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
                         self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
                         hover.Hover(self.submit)
-                        # Clear Button
-                        self.clear = tk.Button(self.main_frame,text='Clear',bg='#eed8a6',fg=primary,font=('normal',8,'bold'),bd=0,command=depression)
-                        self.clear.place(relx=0.547,rely=0.45,width=100,height=30)
                         #========Positive Frame======
-                        self.pos_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
+                        self.pos_frame = tk.Frame(self.main_frame,width=130,height=150,bg=primary,relief='raised',bd=1)
                         self.pos_frame.place(relx=0.28,rely=0.65)
                         # Positive Image
                         self.happy_img = tk.PhotoImage(file='images/happy.png')
                         self.happy_lbl = tk.Label(self.pos_frame,bg=primary,image=self.happy_img)
-                        self.happy_lbl.place(relx=0.26,rely=0.05)
+                        self.happy_lbl.place(relx=0.26,rely=0.09)
                         # Positive Label
                         self.positive_lbl = tk.Label(self.pos_frame,text='Positive',font=('normal',9,'bold'),fg='#008000',bg='#9de19d')
-                        self.positive_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
-                        # Positive Percentage
-                        self.positive_per = tk.Label(self.pos_frame,text='0%',font=('normal',10,'bold'),fg=foreground,bg=primary)
-                        self.positive_per.place(relx=0.415,rely=0.7)
+                        self.positive_lbl.place(relx=0.24,rely=0.65,width=70,height=20)
+
                         #========Depressive Frame======
-                        self.dep_frame = tk.Frame(self.main_frame,width=130,height=170,bg=primary,relief='raised',bd=1)
+                        self.dep_frame = tk.Frame(self.main_frame,width=130,height=150,bg=primary,relief='raised',bd=1)
                         self.dep_frame.place(relx=0.53,rely=0.65)
                         # Depressive Image
                         self.depressive_img = tk.PhotoImage(file='images/sad.png')
                         self.depressive_lbl = tk.Label(self.dep_frame,bg=primary,image=self.depressive_img)
-                        self.depressive_lbl.place(relx=0.26,rely=0.05)
+                        self.depressive_lbl.place(relx=0.26,rely=0.09)
                         # Depressive Label
                         self.depressive_lbl = tk.Label(self.dep_frame,text='Depressive',font=('normal',9,'bold'),fg='#ec1c24',bg='#f6a4a8')
-                        self.depressive_lbl.place(relx=0.24,rely=0.5,width=70,height=20)
-                        # Depressive Percentage
-                        self.depressive_per = tk.Label(self.dep_frame,text='0%',font=('normal',10,'bold'),fg=foreground,bg=primary)
-                        self.depressive_per.place(relx=0.415,rely=0.7)
-                    
+                        self.depressive_lbl.place(relx=0.24,rely=0.65,width=70,height=20)
+                        
                         # Disable Frame Content By Defalult
                         for w in self.pos_frame.winfo_children(): # Positive Frame
                             w.configure(state=tk.DISABLED)
                         for w in self.dep_frame.winfo_children(): # Depressive Frame
                             w.configure(state=tk.DISABLED) 
                     # Detect Polarity Button
-                    self.dep_btn = tk.Button(self.top_frame,text='Detect Depression',font=('arial',9,'bold'),bg=primary,activebackground=primary,fg=gray,bd=0,command=depression)
+                    self.dep_btn = tk.Button(self.top_frame,text='Detect Depression',font=('Arial',9,'bold'),bg=primary,activebackground=primary,fg=gray,bd=0,command=depression)
                     self.dep_btn.place(relx=0.5,rely=0.64,width=410)
         
                     self.btn = tk.PhotoImage(file='images/btn_img.png')
@@ -518,7 +504,7 @@ class App:
                 tooltip.CreateToolTip(self.text_btn,'Type text')
                 def doc():
                     self.master.title("Sentiment247  >  File")
-                    self.settings.configure(state=tk.NORMAL)
+                    self.settings.place(relx=0.20,rely=0.93)
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
@@ -559,10 +545,12 @@ class App:
                             filepath = filedialog.askopenfilename(initialdir='Documents',title='Open a Document',filetypes=(("Text Document","*.txt"),("PNG Files","*.png"),("JPEG Files","*.jpg")))
                             # Open file through file path and read it's content
                             if filepath[-3:] == 'txt':
+                                source = "document"
                                 with open(filepath) as file_:
                                     content = file_.read()
-                                    polarity_widgets(content)
+                                    polarity_widgets(content, source)
                             elif filepath[-3:] == 'jpg' or filepath[-3:] == 'png':
+                                source = "image"
                                 for w in self.main_frame.winfo_children():
                                     w.place_forget() 
                                 # Label for the loader gif
@@ -579,7 +567,7 @@ class App:
                                         load_lbl.unload()
                                         load_lbl.place_forget()
                                         # Call the function to display the text
-                                        polarity_widgets(content)                               
+                                        polarity_widgets(content, source)                               
                                     else:
                                         pass                            
                                 def load():
@@ -633,10 +621,12 @@ class App:
                             filepath = filedialog.askopenfilename(initialdir='Documents',title='Open a Document',filetypes=(("Text Document","*.txt"),("PNG Files","*.png"),("JPEG Files","*.jpg")))
                             # Open file through file path and read it's content
                             if filepath[-3:] == 'txt':
+                                source = "document"
                                 with open(filepath) as file_:
                                     content = file_.read()
-                                    depressive_widgets(content)
+                                    depressive_widgets(content, source)
                             elif filepath[-3:] == 'jpg' or filepath[-3:] == 'png':
+                                source = "image"
                                 for w in self.main_frame.winfo_children():
                                     w.place_forget() 
                                 # Label for the loader gif
@@ -653,7 +643,7 @@ class App:
                                         load_lbl.unload()
                                         load_lbl.place_forget()
                                         # Call the function to display the text
-                                        depressive_widgets(content)                              
+                                        depressive_widgets(content,source)                              
                                     else:
                                         pass                            
                                 def load():
@@ -700,7 +690,7 @@ class App:
                 tooltip.CreateToolTip(self.doc_btn,'Attach file')
                 def voice():
                     self.master.title("Sentiment247  >  Voice Record")
-                    self.settings.configure(state=tk.NORMAL)
+                    self.settings.place(relx=0.20,rely=0.93)
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
@@ -760,7 +750,7 @@ class App:
                 tooltip.CreateToolTip(self.voice_btn,'Voice record')
                 def link():
                     self.master.title("Sentiment247  >  Social Media Post")
-                    self.settings.configure(state=tk.NORMAL)
+                    self.settings.place(relx=0.20,rely=0.93)
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
@@ -801,6 +791,7 @@ class App:
                                     w.destroy()
                                 # GET text from the twitter url
                                 if "twitter" in url: # If the url is a twitter url
+                                    source = "twitter"
                                     # Label for the loader gif
                                     load_lbl = loading.ImageLabel(self.main_frame,bg=gray)
                                     load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
@@ -811,10 +802,10 @@ class App:
                                             load_lbl.unload()  
                                             if self.btn_lbl.winfo_rootx() == 311:                               
                                                 # Call the function to display the text for polarity
-                                                polarity_widgets(content)   
+                                                polarity_widgets(content, source)  
                                             else:
                                                 # Call the function to display the text for depression
-                                                depressive_widgets(content)                                  
+                                                depressive_widgets(content, source)                                  
                                     def load():                                       
                                         load_lbl.load('images/load.gif')
                                     threading.Thread(target=get_tweet).start()
@@ -910,12 +901,13 @@ class App:
                 
                 def settings():
                     self.master.title("Sentiment247  >  Settings")
-                    self.settings.configure(state=tk.DISABLED)
+                    self.settings.place_forget()
                     # Get current colors
                     c.execute("SELECT * FROM Color")
                     colors = c.fetchall()
                     for color in colors:
                         primary, foreground, gray = color[0], color[1], color[2]
+                    #print(primary)
                     # Configure Colour 
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=primary)
@@ -971,11 +963,6 @@ class App:
                     
 
                     def dark():
-                        # Get current colors
-                        #c.execute("SELECT * FROM Color")
-                        #colors = c.fetchall()
-                        #for color in colors:
-                         #   primary, foreground, gray = color[0], color[1], color[2]
                         if self.nav_frame['background'] == '#ffffff': # That means we are on light mode
                             primary, foreground, gray = '#181818', '#ffffff', '#3d3d3d'
                             # update database
@@ -985,7 +972,7 @@ class App:
                             self.master.configure(bg=primary)
                             self.nav_frame.configure(bg=primary)
                             for widget in self.nav_frame.winfo_children():
-                                widget.configure(bg=primary)
+                                widget.configure(bg=primary,activebackground=primary)
                                 if str(widget).split('!')[-1] == 'label':
                                     widget.configure(fg=gray)
                             
@@ -996,14 +983,7 @@ class App:
                             for widget in self.main_frame.winfo_children():
                                 if str(widget).split('!')[-1][0] == 'l':
                                     widget.configure(bg=gray,fg=foreground)
-                                if str(widget).split('!')[-1] == 'frame4':
-                                    widget.configure(bg=primary)
-                                    for widget2 in widget.winfo_children():
-                                        if str(widget2).split('!')[-1][0] == 'l':
-                                            widget2.configure(bg=primary,fg=foreground)
-                                        else:
-                                            widget2.configure(bg=primary,fg=foreground,activebackground=primary,selectcolor=primary)
-                                if str(widget).split('!')[-1] == 'frame5':
+                                if str(widget).split('!')[-1][0:5] == 'frame':
                                     widget.configure(bg=primary)
                                     for widget2 in widget.winfo_children():
                                         if str(widget2).split('!')[-1][0] == 'l':
@@ -1014,11 +994,6 @@ class App:
                             pass   
                     
                     def light():
-                        # Get current colors
-                        #c.execute("SELECT * FROM Color")
-                        #colors = c.fetchall()
-                        #for color in colors:
-                         #   primary, foreground, gray = color[0], color[1], color[2]
                         if self.nav_frame['background'] == '#181818': # That means we are on light mode
                             primary, foreground, gray = '#ffffff', '#222222', '#e0e0e0'
                             
@@ -1029,7 +1004,7 @@ class App:
                             self.master.configure(bg=primary)
                             self.nav_frame.configure(bg=primary)
                             for widget in self.nav_frame.winfo_children():
-                                widget.configure(bg=primary)
+                                widget.configure(bg=primary,activebackground=primary)
                                 if str(widget).split('!')[-1] == 'label':
                                     widget.configure(fg=gray)
                             
@@ -1040,14 +1015,7 @@ class App:
                             for widget in self.main_frame.winfo_children():
                                 if str(widget).split('!')[-1][0] == 'l':
                                     widget.configure(bg=gray,fg=foreground)
-                                if str(widget).split('!')[-1] == 'frame4':
-                                    widget.configure(bg=primary)
-                                    for widget2 in widget.winfo_children():
-                                        if str(widget2).split('!')[-1][0] == 'l':
-                                            widget2.configure(bg=primary,fg=foreground)
-                                        else:
-                                            widget2.configure(bg=primary,fg=foreground,activebackground=primary,selectcolor=primary)
-                                if str(widget).split('!')[-1] == 'frame5':
+                                if str(widget).split('!')[-1][0:5] == 'frame':
                                     widget.configure(bg=primary)
                                     for widget2 in widget.winfo_children():
                                         if str(widget2).split('!')[-1][0] == 'l':
@@ -1070,7 +1038,6 @@ class App:
                 self.settings_img = tk.PhotoImage(file='images/settings.png')
                 self.settings = tk.Button(self.nav_frame,bg=primary,activebackground=primary,image=self.settings_img,bd=0,command=settings)
                 self.settings.place(relx=0.20,rely=0.93)
-                self.settings.configure(state=tk.NORMAL)
                 
                 text() # Run the text function on start
               
