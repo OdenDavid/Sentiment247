@@ -1,3 +1,3 @@
-text = '.!frame3.!button2'
-text = text.split('!')[-1][0]
-print(text)
+import glob
+
+print(len(glob.glob('images/*png')) + len(glob.glob('images/*ico')) + len(glob.glob('images/*gif')))

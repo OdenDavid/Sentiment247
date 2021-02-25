@@ -11,21 +11,22 @@ import validators
 import socket
 
 import sqlite3
+import glob
 
-from Extensions import ocr, DepressionScore, PolarityScore
+from Extensions import vision, DepressionScore, PolarityScore
 from Extensions.DepressionScore import TweetClassifier
 import pickle
 
-try:
-    conn = sqlite3.connect(r"Data/Data.db")
-    c = conn.cursor() 
-except FileNotFoundError:
-    tkinter.messagebox.showerror("Connection Error","Couldn't Connect to Data.\nPlease ensure file is available.")  
+
 #=========================Main Window=============================
 class App:
-    def __init__(self, master):        
-        c.execute("SELECT * FROM Color")
-        colors = c.fetchall()
+    def __init__(self, master): 
+        try:       
+            c.execute("SELECT * FROM Color")
+            colors = c.fetchall()
+        except sqlite3.OperationalError:
+            messagebox.showerror("Database Error","Can't Access Database")
+
         for color in colors:
             primary = color[0] #'#ffffff' #181818
             foreground = color[1] #'#222222' #ffffff
@@ -60,8 +61,7 @@ class App:
                 #=============Main Frame=======================
                 self.main_frame = tk.Frame(self.master,width=821,height=572,bg=gray)
                 self.main_frame.place(relx=0.085,rely=0.115)
-                
-                
+                                
                 self.lbl = tk.Label(self.nav_frame,bg=primary,text='___________',fg=gray)
                 self.lbl.place(relx=0.07,rely=0.09)
                 self.logo = tk.PhotoImage(file='images/logo_img.png')
@@ -72,6 +72,7 @@ class App:
                 self.logo_lbl.place(relx=0,rely=0.157)
                 
                 def is_connected():
+                    """check for an active internet connection"""
                     try:
                         # connects to the host and tells us if the host is actually reachable
                         socket.create_connection(("1.1.1.1", 53))
@@ -80,15 +81,12 @@ class App:
                         pass
                     return False
 
-                def polarity_widgets(content, source):
-                    # Get current colors
-                    c.execute("SELECT * FROM Color")
-                    colors = c.fetchall()
-                    for color in colors:
-                        primary, foreground, gray = color[0], color[1], color[2]
+                def polarity_widgets(content, source, primary, foreground, gray):
+                    """When called display positive, neutral and negative widgets
+                       for document and link sections"""
+                    for widget in self.main_frame.winfo_children():
+                        widget.destroy()  
 
-                    for w in self.main_frame.winfo_children():
-                        w.destroy()                   
                     if source == "twitter":
                         # Label for the twitter
                         self.twitter = tk.PhotoImage(file='images/twitter.png')
@@ -97,15 +95,14 @@ class App:
                     else:
                         pass
                     # Text Widget
-                    self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,relief='groove',bd=1)
+                    self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,insertbackground=foreground,relief='groove',bd=1)
                     self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
                     self.text_box.insert(tk.END,content)
                     def submit():
+                        """Get the content from the text box run the polarity scorer"""
                         content = self.text_box.get("1.0",'end-1c') # The content of the text box
                         if content == "":
                             messagebox.showerror("Entry error","You can not perform sentiment analysis on an empty text box")
-                        elif type(content) == int:
-                            messagebox.showerror("Entry error","You can not perform sentiment analysis on a number")
                         else:
                             polarity_scorer(content)
                     # Submit Button
@@ -160,12 +157,10 @@ class App:
                     for w in self.neg_frame.winfo_children(): # Negative Frame
                         w.configure(state=tk.DISABLED)                 
                         
-                def depressive_widgets(content, source):
-                    # Get current colors
-                    c.execute("SELECT * FROM Color")
-                    colors = c.fetchall()
-                    for color in colors:
-                        primary, foreground, gray = color[0], color[1], color[2]
+                def depressive_widgets(content, source, primary, foreground, gray):
+                    """When called display positive and depressive widgets
+                       for document and link sections"""
+                
                     # Remove every widget that stands in your way
                     for w in self.main_frame.winfo_children():
                         w.destroy()
@@ -178,7 +173,7 @@ class App:
                     else:
                         pass
                     # Text Widget
-                    self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,relief='groove',bd=1)
+                    self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,insertbackground=foreground,relief='groove',bd=1)
                     self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
                     self.text_box.insert(tk.END,content)
                     
@@ -186,8 +181,6 @@ class App:
                         content = self.text_box.get("1.0",'end-1c') # The content of the text box
                         if content == "":
                             messagebox.showerror("Entry error","You can not perform sentiment analysis on an empty text box")
-                        elif type(content) == int:
-                            messagebox.showerror("Entry error","You can not perform sentiment analysis on a number")
                         else:
                             for w in self.main_frame.winfo_children():
                                 w.place_forget()
@@ -227,7 +220,7 @@ class App:
                         w.configure(state=tk.DISABLED) 
         
                 def polarity_scorer(content):
-                    """This Function is will assign polaity scores to thier
+                    """This Function is will assign polaity model and scores to
                     respective labels and configuring size of frames when scores are calculated"""
                     
                     result = PolarityScore.sentiment(content) # A dictionary of sentiment scores
@@ -279,6 +272,8 @@ class App:
                             w.configure(state=tk.DISABLED)
                 
                 def depressive_scorer(processed_text):
+                    """This Function is will assign depression model and scores to
+                    respective labels and configuring size of frames when scores are calculated"""
                     result = DepressionScore.RunModel(processed_text)
                     # Enable Frames
                     self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
@@ -342,7 +337,7 @@ class App:
                         for w in self.main_frame.winfo_children():
                             w.destroy()
                         # Text Widget
-                        self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,relief='groove',bd=1)
+                        self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,insertbackground=foreground,relief='groove',bd=1)
                         self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
                         # Place Holder for text widget
                         self.text_box.insert(tk.END,'Type something here...')
@@ -426,7 +421,7 @@ class App:
                         for w in self.main_frame.winfo_children():
                             w.destroy()
                         # Text Widget
-                        self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,relief='groove',bd=1)
+                        self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,insertbackground=foreground,relief='groove',bd=1)
                         self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
                         # Place Holder for text widget
                         self.text_box.insert(tk.END,'Type something here...')
@@ -548,7 +543,7 @@ class App:
                                 source = "document"
                                 with open(filepath) as file_:
                                     content = file_.read()
-                                    polarity_widgets(content, source)
+                                    polarity_widgets(content, source, primary, foreground, gray)
                             elif filepath[-3:] == 'jpg' or filepath[-3:] == 'png':
                                 source = "image"
                                 for w in self.main_frame.winfo_children():
@@ -558,16 +553,12 @@ class App:
                                 load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
                                     
                                 def clean():
-                                    img = ocr.get_image(filepath)
-                                    img = ocr.get_grayscale(img)
-                                    img = ocr.thresholding(img)
-                                    img = ocr.noise_removal(img)
-                                    content = ocr.ocr_core(img)
+                                    content = vision.detect_text(filepath)
                                     if content != "":
                                         load_lbl.unload()
                                         load_lbl.place_forget()
                                         # Call the function to display the text
-                                        polarity_widgets(content, source)                               
+                                        polarity_widgets(content, source, primary, foreground, gray)                               
                                     else:
                                         pass                            
                                 def load():
@@ -624,7 +615,7 @@ class App:
                                 source = "document"
                                 with open(filepath) as file_:
                                     content = file_.read()
-                                    depressive_widgets(content, source)
+                                    depressive_widgets(content, source, primary, foreground, gray)
                             elif filepath[-3:] == 'jpg' or filepath[-3:] == 'png':
                                 source = "image"
                                 for w in self.main_frame.winfo_children():
@@ -634,16 +625,12 @@ class App:
                                 load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
                                     
                                 def clean():
-                                    img = ocr.get_image(filepath)
-                                    img = ocr.get_grayscale(img)
-                                    img = ocr.thresholding(img)
-                                    img = ocr.noise_removal(img)
-                                    content = ocr.ocr_core(img)
+                                    content = vision.detect_text(filepath)
                                     if content != "":
                                         load_lbl.unload()
                                         load_lbl.place_forget()
                                         # Call the function to display the text
-                                        depressive_widgets(content,source)                              
+                                        depressive_widgets(content, source, primary, foreground, gray)                              
                                     else:
                                         pass                            
                                 def load():
@@ -802,10 +789,10 @@ class App:
                                             load_lbl.unload()  
                                             if self.btn_lbl.winfo_rootx() == 311:                               
                                                 # Call the function to display the text for polarity
-                                                polarity_widgets(content, source)  
+                                                polarity_widgets(content, source, primary, foreground, gray)  
                                             else:
                                                 # Call the function to display the text for depression
-                                                depressive_widgets(content, source)                                  
+                                                depressive_widgets(content, source, primary, foreground, gray)                                  
                                     def load():                                       
                                         load_lbl.load('images/load.gif')
                                     threading.Thread(target=get_tweet).start()
@@ -1047,7 +1034,7 @@ class App:
             load_lbl.load('images/load.gif')
             self.loading = tk.Label(self.master,text='Getting things ready...',fg=foreground,bg=primary,font=('normal',9))
             self.loading.place(relx=0.425,rely=0.49)
-            self.master.after(1000, continue_) # Load for 1000 milliseconds and call the continue function when done
+            self.master.after(1000, continue_) # Load for 1 second and call the continue function when done
         # Home Page
         self.bg_img = tk.PhotoImage(file='images/bg.png')
         self.bg = tk.Label(self.master,image=self.bg_img,bg=primary)
@@ -1077,6 +1064,15 @@ class App:
 
 if __name__=='__main__':
     root = tk.Tk() 
+    
+    conn = sqlite3.connect("Data/Data.db")
+    c = conn.cursor() 
+
+    imagescount = len(glob.glob('images/*png')) + len(glob.glob('images/*ico')) + len(glob.glob('images/*gif'))
+    if imagescount != 24:
+        messagebox.showerror("File Error",str(24-imagescount)+" File(s) missing from images")
+    else:
+        pass
 
     app = App(root)
     
