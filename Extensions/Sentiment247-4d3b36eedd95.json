@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "sentiment247",
+  "private_key_id": "4d3b36eedd950b86d7c0dfe5fa8591c64dfa206b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDTu4gD3abyDp6y\n9w0hqZEfhaeetr62sZ4QcuGtaiSXBY8su2ZI+xw3OwTlBeYUXP6cg+I9n89Q203r\ncz3MsXuSCBYb4u3DVT35pfboU8R2QsjPfVsu/tIbjvLf2mZzFMxtynzncwU6ypji\nX+aKq7wmr0cf31oydKL8zbyVEHzbLA0pVNASuum65TXKgruLb4kZYqbkdW+1JHO3\nHar8y9M0OfxAddahRVXpD0kH2JAbOtmUoCZCjX/jBJP7Xie0aHxESjStkD3WdPy+\nu1VxSJmuiXJzgnWi11JJO+lR157QQCbKm60O9QBnBvaIqU3YMi+7GfGgO/62rd1w\n7QRibaUNAgMBAAECggEALkKTG1seelTo5guVriTk7Pjv8DyXqwVgFlJvTcr6zxc7\nGqggFzJsDgIiVeKFzC2sQGiNMe8cZdtgaSCu4C3n5HZJVFLupUaWyZhx+30v17HM\nO481MK2inLxNAs0uJJcm+hbrVss52YhBwnX3AhW3AFG77bIIPC1hHfBac0wcp2rQ\n77g7/23eVZ6j/JMrDLz0QhjVfLa7bH47ix6cz1PabT0jbOpygVKvzRswJ13FI/d+\nB5vLnyn4ifyLv9UZF7X9DY1sCTcod0moQm1PwU3fCc70OGOj/Drg8+snx9+BmXs0\nQNPIrJYVwj8oBhrYIReh6qw9sXGEldubrYeiPL++0QKBgQDxxQMTsouhxrIAc6rm\nblOdQ4xyapgUgTN3e8smOgaUGjqsjGcFVnRfRZQjKOvAyOgdgJwD6zVRLWKMZXG/\n8PPl9U1RyLSVsV/SBOJ/s9q0XllLuxe/kRXntEvs+olFco8pHWOFivBwjSJfc733\n9eg/76W/FIFSlxUzE6WLduNfkQKBgQDgMeu3YniYwtwfvhAQJpSJAXIS9i4TcDv8\nT3NvOPszIVFExQN6u30UO0HzECsvE063bY0VwoMOarzbV7VeAnegUwdjcGXAtgpm\nDODxsPBT7N4p59Q83QLvEhqeRsWoh0ayuEWs0Rn6ldNwj9wYHmj5UGtKs3g8GRXG\ndCiGKnEnvQKBgQCuKflkeCuEd+mEz85ePz32vVFwnv89TjGwMjqPKB/TEu4PnPkd\n7EDa3PmxNmpWr6QelKZPYGJBP0uNzgpadg6NKt/vOYF1kJhxZ9lumzbC1nDHUFj0\nRGUeTFChv32hzLv6p1QpQISi39jSIEPKW5habp3c/72FrJa1+8I2rIdxMQKBgQDb\ng+WhzJf6MylnJykBN1VOhIzWRhc9TzJczMphB7DmEmRJaoIKpRNGQPNE8/rkgAoe\nDfULbkX2UsqSFeHup4nMACAG3GG0/ElYPJnv7GiUNCQfce/cnCYoQViwyuj0J2gw\ny77lBGRkeFjsKN+++d+c5YH4RZufdIxeoROgsmPTHQKBgF8w+/7aB1HPvYsAnZMz\nycnGoU+mPgMHNhWqvsCLkGceDL9ApMzylcL7VvNLArT3xt+mCpl0w6bafWX5vBeQ\n8MOgr+oLVJYVLAsnkKhjDXDZCKOEj30oAI3AlnaWaUu8LqKkWqCtoMG1pszwgn14\nvu1LBQnvmV7FBYhdent8dL0W\n-----END PRIVATE KEY-----\n",
+  "client_email": "davidoden@sentiment247.iam.gserviceaccount.com",
+  "client_id": "112377417779085858828",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/davidoden%40sentiment247.iam.gserviceaccount.com"
+}
