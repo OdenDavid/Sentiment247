@@ -7,6 +7,7 @@ Sentiment247 is an application that dectects emotional tone in text data by dict
 <br>
 Please star⭐ the repo if you like or wish to contribute to this project.
 <br>
+<br>
 [![Twitter Follow](https://img.shields.io/twitter/follow/David0den.svg?style=social)](https://twitter.com/David0den)
 <br>
 
@@ -16,8 +17,8 @@ You can perform sentiment analysis on text from various sources such as
 - [x] Documents.
 - [x] Images.
 - [x] Voice records.
-- [x] Social Media Posts(ie. Twitter, Facebook, Instagram).
-In this version 1.0 only twitter is supported
+- [x] Social Media Posts (ie. Twitter, Facebook, Instagram).
+ In this version 1.0 only twitter is supported
 
 ## 💻 Requirements
 * Windows Operating System
