@@ -12,7 +12,7 @@ class CreateToolTip(object):
     def enter(self, event=None):
         x = y = 0
         x, y, cx, cy = self.widget.bbox("insert")
-        x += self.widget.winfo_rootx() + 10
+        x += self.widget.winfo_rootx() + 2
         y += self.widget.winfo_rooty() + 50
         # creates a toplevel window
         self.top = tk.Toplevel(self.widget)
