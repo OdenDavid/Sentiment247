@@ -2,7 +2,7 @@
 
 # 😊😐☹ Sentiment247
 
-Sentiment247 An application to dectect the emotional tone in text data by dictating polarity and determining depression using NLP techniques.
+Sentiment247 is an application that dectects emotional tone in text data by dictating polarity and determining depression using NLP techniques.
 
 <br>
 Please star⭐ the repo if you like or wish to contribute to this project.
