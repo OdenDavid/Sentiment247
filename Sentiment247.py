@@ -59,7 +59,7 @@ class App:
                 self.nav_frame = tk.Frame(self.master,bg=primary,width=79,height=650,relief='groove',bd=1)
                 self.nav_frame.place(relx=0,rely=0)
                 #=============Main Frame=======================
-                self.main_frame = tk.Frame(self.master,width=821,height=572,bg=gray)
+                self.main_frame = tk.Frame(self.master,width=821,height=575,bg=gray)
                 self.main_frame.place(relx=0.085,rely=0.115)
                                 
                 self.lbl = tk.Label(self.nav_frame,bg=primary,text='___________',fg=gray)
@@ -340,15 +340,13 @@ class App:
                         self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,insertbackground=foreground,relief='groove',bd=1)
                         self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
                         # Place Holder for text widget
-                        self.text_box.insert(tk.END,'Type something here...')
+                        self.text_box.insert(tk.END,'Some text goes in here...')
                         self.text_box.bind("<FocusIn>", lambda args: self.text_box.delete("1.0",tk.END))
         
                         def submit():
                             content = self.text_box.get("1.0",'end-1c') # The content of the text box
                             if content == "":
                                 messagebox.showerror("Entry error","You can not perform sentiment analysis on an empty text box")
-                            elif type(content) == int:
-                                messagebox.showerror("Entry error","You can not perform sentiment analysis on a number")
                             else:
                                 polarity_scorer(content)
                         # Submit Button
@@ -424,7 +422,7 @@ class App:
                         self.text_box = tk.Text(self.main_frame,font=('normal',10),bg=primary,fg=foreground,insertbackground=foreground,relief='groove',bd=1)
                         self.text_box.place(relx=0.17,rely=0.07,width=520,height=200)
                         # Place Holder for text widget
-                        self.text_box.insert(tk.END,'Type something here...')
+                        self.text_box.insert(tk.END,'Some text goes in here...')
                         self.text_box.bind("<FocusIn>", lambda args: self.text_box.delete("1.0",tk.END))
                     
                         def submit():
@@ -436,22 +434,9 @@ class App:
                             else:
                                 for w in self.main_frame.winfo_children():
                                     w.place_forget()
-                                # Label for the loader gif
-                                load_lbl = loading.ImageLabel(self.main_frame,bg=gray)
-                                load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
                                 
-                                def clean():
-                                    processed = DepressionScore.process_message(content)
-                                    if processed != "":
-                                        load_lbl.unload()
-                                        load_lbl.place_forget()
-                                        depressive_scorer(processed)                               
-                                    else:
-                                        pass                            
-                                def load():
-                                    load_lbl.load('images/load.gif')
-                                threading.Thread(target=clean).start()
-                                threading.Thread(target=load).start() 
+                                processed = DepressionScore.process_message(content)
+                                depressive_scorer(processed)                               
                         # Submit Button
                         self.submit = tk.Button(self.main_frame,text='Submit',bg='#ecb22e',fg=primary,font=('normal',8,'bold'),bd=0,command=submit)
                         self.submit.place(relx=0.682,rely=0.45,width=100,height=30)
@@ -553,14 +538,22 @@ class App:
                                 load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
                                     
                                 def clean():
-                                    content = vision.detect_text(filepath)
-                                    if content != "":
+                                    if is_connected(): # If there is internet connection
+                                        content = vision.detect_text(filepath)
+                                        if content != "":
+                                            load_lbl.unload()
+                                            load_lbl.place_forget()
+                                            # Call the function to display the text
+                                            polarity_widgets(content, source, primary, foreground, gray)                               
+                                        else:
+                                            pass  
+                                    else:
                                         load_lbl.unload()
                                         load_lbl.place_forget()
-                                        # Call the function to display the text
-                                        polarity_widgets(content, source, primary, foreground, gray)                               
-                                    else:
-                                        pass                            
+                                        self.lbl_404 = tk.PhotoImage(file='images/error-404.png')
+                                        self.tryagain = tk.Button(self.main_frame,image=self.lbl_404,text='No internet try again',compound='top',font=('arial',9,'bold'),bg=gray,activebackground=gray,fg=foreground,bd=0,command=doc)
+                                        self.tryagain.place(relx=0.40,rely=0.38)
+                                                              
                                 def load():
                                     load_lbl.load('images/load.gif')
                                 threading.Thread(target=clean).start()
@@ -622,17 +615,23 @@ class App:
                                     w.place_forget() 
                                 # Label for the loader gif
                                 load_lbl = loading.ImageLabel(self.main_frame,bg=gray)
-                                load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)
-                                    
+                                load_lbl.place(relx=0.45,rely=0.37,width=70,height=70)                                    
                                 def clean():
-                                    content = vision.detect_text(filepath)
-                                    if content != "":
+                                    if is_connected(): # If there is internet connection
+                                        content = vision.detect_text(filepath)
+                                        if content != "":
+                                            load_lbl.unload()
+                                            load_lbl.place_forget()
+                                            # Call the function to display the text
+                                            depressive_widgets(content, source, primary, foreground, gray)
+                                        else:
+                                            pass                             
+                                    else:
                                         load_lbl.unload()
                                         load_lbl.place_forget()
-                                        # Call the function to display the text
-                                        depressive_widgets(content, source, primary, foreground, gray)                              
-                                    else:
-                                        pass                            
+                                        self.lbl_404 = tk.PhotoImage(file='images/error-404.png')
+                                        self.tryagain = tk.Button(self.main_frame,image=self.lbl_404,text='No internet try again',compound='top',font=('arial',9,'bold'),bg=gray,activebackground=gray,fg=foreground,bd=0,command=doc)
+                                        self.tryagain.place(relx=0.40,rely=0.38)                           
                                 def load():
                                     load_lbl.load('images/load.gif')
                                 threading.Thread(target=clean).start()
@@ -761,8 +760,9 @@ class App:
                         w.destroy()
                     
                     def link_widgets():
+                        """widgets for the link section"""
                         # Create Entry Box to accept url link
-                        self.url_ent = tk.Entry(self.main_frame,font=('normal',10),fg='gray60',bg=primary,relief='groove',bd=1)
+                        self.url_ent = tk.Entry(self.main_frame,font=('normal',10),fg='gray60',insertbackground=foreground,bg=primary,relief='groove',bd=1)
                         self.url_ent.place(relx=0.185,rely=0.07,width=520,height=30)   
                         # Place Holder for text widget
                         self.url_ent.insert(tk.END,'Enter url link to social media post...')
@@ -832,8 +832,8 @@ class App:
                             else: 
                                 load_lbl.unload()
                                 self.lbl_404 = tk.PhotoImage(file='images/error-404.png')
-                                self.tryagain = tk.Button(self.main_frame,image=self.lbl_404,text='Try again',compound='top',font=('arial',9,'bold'),bg=gray,activebackground=gray,fg=foreground,bd=0,command=link)
-                                self.tryagain.place(relx=0.46,rely=0.38)
+                                self.tryagain = tk.Button(self.main_frame,image=self.lbl_404,text='No internet try again',compound='top',font=('arial',9,'bold'),bg=gray,activebackground=gray,fg=foreground,bd=0,command=link)
+                                self.tryagain.place(relx=0.40,rely=0.38)
                         def load():
                             load_lbl.load('images/load.gif')
                         threading.Thread(target=check_connection).start()
@@ -865,8 +865,8 @@ class App:
                             else: 
                                 load_lbl.unload()
                                 self.lbl_404 = tk.PhotoImage(file='images/error-404.png')
-                                self.tryagain = tk.Button(self.main_frame,image=self.lbl_404,text='Try again',compound='top',font=('arial',9,'bold'),bg=gray,activebackground=gray,fg=foreground,bd=0,command=link)
-                                self.tryagain.place(relx=0.46,rely=0.38)
+                                self.tryagain = tk.Button(self.main_frame,image=self.lbl_404,text='No internet try again',compound='top',font=('arial',9,'bold'),bg=gray,activebackground=gray,fg=foreground,bd=0,command=link)
+                                self.tryagain.place(relx=0.40,rely=0.38)
                         def load():
                             load_lbl.load('images/load.gif')
                         threading.Thread(target=check_connection).start()
@@ -878,8 +878,7 @@ class App:
                     self.btn_lbl = tk.Label(self.top_frame,bg=primary,image=self.btn)
                     self.btn_lbl.place(relx=0.01,rely=0.91)
                     
-                    polarity() # Run the polarity function
-                 # Attach Document Button    
+                    polarity() # Run the polarity function   
                 # Social media link Button 
                 self.link = tk.PhotoImage(file='images/link_img.png')
                 self.link_btn = tk.Button(self.nav_frame,bg=primary,image=self.link,activebackground=primary,bd=0,command=link)
@@ -894,7 +893,6 @@ class App:
                     colors = c.fetchall()
                     for color in colors:
                         primary, foreground, gray = color[0], color[1], color[2]
-                    #print(primary)
                     # Configure Colour 
                     self.text_btn.configure(bg=primary)
                     self.doc_btn.configure(bg=primary)
@@ -948,7 +946,6 @@ class App:
                     self.light_img = tk.PhotoImage(file='images/light.png')
                     self.dark_img = tk.PhotoImage(file='images/dark.png')
                     
-
                     def dark():
                         if self.nav_frame['background'] == '#ffffff': # That means we are on light mode
                             primary, foreground, gray = '#181818', '#ffffff', '#3d3d3d'
@@ -1034,7 +1031,7 @@ class App:
             load_lbl.load('images/load.gif')
             self.loading = tk.Label(self.master,text='Getting things ready...',fg=foreground,bg=primary,font=('normal',9))
             self.loading.place(relx=0.425,rely=0.49)
-            self.master.after(1000, continue_) # Load for 1 second and call the continue function when done
+            self.master.after(3000, continue_) # Load for 1 second and call the continue function when done
         # Home Page
         self.bg_img = tk.PhotoImage(file='images/bg.png')
         self.bg = tk.Label(self.master,image=self.bg_img,bg=primary)
