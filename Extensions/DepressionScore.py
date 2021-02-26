@@ -12,7 +12,7 @@ from math import log, sqrt
 import pandas as pd
 import numpy as np
 
-import os
+import os, sys
 
 import pickle
 
@@ -138,7 +138,8 @@ class TweetClassifier(object):
         return result
 
 def RunModel(processed_text):
-    model = pickle.load(open('C:/Users/Oden David/Desktop/Sentiment247/Extensions/Models/classifier.pickle','rb'))
+    pathname = os.path.dirname(sys.argv[0])
+    model = pickle.load(open(pathname+'/Extensions/Models/classifier.pickle','rb'))
     result = model.classify(processed_text)
     return result
 
