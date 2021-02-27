@@ -5,7 +5,7 @@
 Sentiment247 is an application that dectects emotional tone in text data by dictating polarity and determining depression using NLP techniques.
 
 <br>
-Please star⭐ the repo if you like or wish to contribute to this project.
+Please star⭐ the repo if you like what you see or wish to contribute to this project.
 <br>
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/David0den.svg?style=social)](https://twitter.com/David0den)
@@ -13,7 +13,7 @@ Please star⭐ the repo if you like or wish to contribute to this project.
 ## ✨ Features
 You can perform sentiment analysis on text from various sources such as
 - [x] Direct text from keyboard.
-- [x] Documents.
+- [x] Text Documents.
 - [x] Images.
 - [x] Voice records.
 - [x] Social Media Posts (ie. Twitter, Facebook, Instagram).
